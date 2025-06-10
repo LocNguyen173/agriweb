@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getStorage } from "firebase/storage";
@@ -7,7 +9,7 @@ import { getStorage } from "firebase/storage";
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "AIzaSyAKs8jLFGzlOt8fLbWjWgIFZpKFjMVT6jQ",
+  apiKey: process.env.FIREBASE_API_KEY,
   authDomain: "agriweb-b3d1f.firebaseapp.com",
   projectId: "agriweb-b3d1f",
   storageBucket: "agriweb-b3d1f.appspot.com",
