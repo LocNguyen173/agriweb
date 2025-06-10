@@ -4,7 +4,7 @@ const blogsController = require('../controllers/blogs/blogsController');
 
 // Tạo blog mới
 router.post('/', (req, res) => {
-  blogsController.createAndSaveBlog((err, data) => {
+  blogsController.createAndSaveBlog(req.body, (err, data) => {
     if (err) return res.status(500).json({ error: err.message });
     res.status(201).json(data);
   });

@@ -1,47 +1,44 @@
 const { Category } = require('../../config/model');
 
 // Tạo mới một danh mục blog
-const createBlogCategory = async (data) => {
+const createBlogCategory = async (data, callback) => {
   try {
-    const category = new Category({
+    const newCategory = new Category({
       name: data.name,
       description: data.description,
       type: 'blog',
       created_at: new Date(),
       updated_at: new Date(),
     });
-    const result = await category.save();
-    return result;
+    const savedCategory = await newCategory.save();
+    callback(null, savedCategory);
   } catch (err) {
-    console.error('Lỗi tạo category:', err);
-    throw err;
+    callback(err);
   }
 };
 
 // Lấy tất cả danh mục blog
-const getAllBlogCategories = async () => {
+const getAllBlogCategories = async (callback) => {
   try {
     const categories = await Category.find({ type: 'blog' });
-    return categories;
+    callback(null, categories);
   } catch (err) {
-    console.error('Lỗi lấy tất cả danh mục blog:', err);
-    throw err;
+    callback(err);
   }
 };
 
 // Tìm danh mục blog theo ID
-const getBlogCategoryById = async (id) => {
+const getBlogCategoryById = async (id, callback) => {
   try {
     const category = await Category.findById(id);
-    return category;
+    callback(null, category);
   } catch (err) {
-    console.error('Lỗi tìm danh mục blog theo ID:', err);
-    throw err;
+    callback(err);
   }
 };
 
 // Cập nhật danh mục blog
-const updateBlogCategory = async (id, data) => {
+const updateBlogCategory = async (id, data, callback) => {
   try {
     const category = await Category.findByIdAndUpdate(
       id,
@@ -54,21 +51,19 @@ const updateBlogCategory = async (id, data) => {
       },
       { new: true }
     );
-    return category;
+    callback(null, category);
   } catch (err) {
-    console.error('Lỗi cập nhật danh mục blog:', err);
-    throw err;
+    callback(err);
   }
 };
 
 // Xóa danh mục blog
-const deleteBlogCategory = async (id) => {
+const deleteBlogCategory = async (id, callback) => {
   try {
     const category = await Category.findByIdAndDelete(id);
-    return category;
+    callback(null, category);
   } catch (err) {
-    console.error('Lỗi xóa danh mục blog:', err);
-    throw err;
+    callback(err);
   }
 };
 
