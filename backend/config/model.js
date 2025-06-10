@@ -15,7 +15,7 @@ const blogSchema = new mongoose.Schema({
     title: { type: String, required: true },
     description: { type: String, required: true },
     content: { type: String, required: true },
-    type: { type: String, required: true }, // ví dụ: 'news', 'review', v.v.
+    // type: { type: String, required: true }, // ví dụ: 'news', 'review', v.v.
     image: { type: String },
     video: { type: String },
     category: { type: mongoose.Schema.Types.ObjectId, ref: 'Category', required: true }, // liên kết danh mục

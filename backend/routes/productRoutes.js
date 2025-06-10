@@ -4,7 +4,7 @@ const productsController = require('../controllers/products/productsController')
 
 // Tạo sản phẩm mới
 router.post('/', (req, res) => {
-  productsController.createAndSaveProduct((err, data) => {
+  productsController.createAndSaveProduct(req.body, (err, data) => {
     if (err) return res.status(500).json({ error: err.message });
     res.status(201).json(data);
   });
@@ -44,7 +44,7 @@ router.get('/:id', (req, res) => {
 
 // Sửa sản phẩm theo ID
 router.put('/:id', (req, res) => {
-  productsController.findProductAndEdit(req.params.id, (err, data) => {
+  productsController.findProductAndEdit(req.params.id, req.body, (err, data) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(data);
   });
@@ -52,7 +52,7 @@ router.put('/:id', (req, res) => {
 
 // Sửa giá sản phẩm theo tên
 router.put('/price/:name', (req, res) => {
-  productsController.findPriceAndUpdate(req.params.name, (err, data) => {
+  productsController.findPriceAndUpdate(req.params.name, req.body, (err, data) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(data);
   });
@@ -68,7 +68,7 @@ router.delete('/:id', (req, res) => {
 
 // Xóa nhiều sản phẩm theo tên mặc định
 router.delete('/', (req, res) => {
-  productsController.removeManyProducts((err, data) => {
+  productsController.removeManyProducts(req.body, (err, data) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(data);
   });
@@ -76,7 +76,7 @@ router.delete('/', (req, res) => {
 
 // Query chain
 router.get('/', (req, res) => {
-  productsController.queryChainProduct((err, data) => {
+  productsController.queryChainProduct(req.body, (err, data) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(data);
   });

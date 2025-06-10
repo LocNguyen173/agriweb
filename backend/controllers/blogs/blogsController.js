@@ -1,4 +1,3 @@
-const mongoose = require('mongoose');
 const { Blog } = require('../../config/model');
 
 // Hàm tạo blog mới, truyền thêm categoryId
@@ -6,18 +5,16 @@ const createAndSaveBlog = async (blogData, done) => {
   try {
     console.log("Received category:", blogData.category);
 
-    const categoryId = new mongoose.Types.ObjectId(blogData.category);
-
     // blogData phải chứa category (ObjectId của Category)
     const blog = new Blog({
       blogId: blogData.blogId,
       title: blogData.title,
       description: blogData.description,
       content: blogData.content,
-      type: blogData.type,
+      // type: blogData.type,
       image: blogData.image,
       video: blogData.video,
-      category: categoryId, // ObjectId
+      category: blogData.category, // ObjectId
       created_at: new Date(),
       updated_at: new Date()
     });
@@ -45,10 +42,32 @@ const createManyBlogs = async (arrayOfBlogs, done) => {
 };
 
 // Hàm tìm blog theo ngày tạo
-const findBlogsByDate = async (date, done) => {
+const findBlogsByDate = async (dateString, done) => {
   try {
-    const data = await Blog.find({ created_at: date });
-    console.log("Blogs found by date:", data);
+    // Tạo đối tượng Date từ chuỗi ngày (VD: "2025-06-10")
+    const date = new Date(dateString);
+    
+    // Kiểm tra xem ngày hợp lệ không
+    if (isNaN(date.getTime())) {
+      return done(new Error("Invalid date format. Use YYYY-MM-DD"));
+    }
+    
+    // Tạo khoảng thời gian cho toàn bộ ngày (từ 00:00:00 đến 23:59:59)
+    const startOfDay = new Date(date);
+    startOfDay.setHours(0, 0, 0, 0);
+    
+    const endOfDay = new Date(date);
+    endOfDay.setHours(23, 59, 59, 999);
+    
+    // Tìm tất cả blog có created_at trong khoảng thời gian này
+    const data = await Blog.find({
+      created_at: {
+        $gte: startOfDay,
+        $lte: endOfDay
+      }
+    });
+    
+    console.log(`Blogs found for date ${dateString}:`, data);
     done(null, data);
   } catch (err) {
     console.error(err);
@@ -90,7 +109,7 @@ const findBlogAndEdit = async (blogId, updateData, done) => {
     if (updateData.description) blog.description = updateData.description;
     if (updateData.title) blog.title = updateData.title;
     if (updateData.content) blog.content = updateData.content;
-    if (updateData.type) blog.type = updateData.type;
+    // if (updateData.type) blog.type = updateData.type;
     if (updateData.image) blog.image = updateData.image;
     if (updateData.video) blog.video = updateData.video;
     if (updateData.category) blog.category = updateData.category; // cập nhật category nếu có
@@ -106,12 +125,30 @@ const findBlogAndEdit = async (blogId, updateData, done) => {
 };
 
 // Hàm tìm và cập nhật loại blog theo tiêu đề
-const findTypeAndUpdate = async (title, done) => {
+const findCategoryAndUpdate = async (title, data, done) => {
   try {
-    const typeToSet = "Vegetable";
-    const data = await Blog.findOneAndUpdate({ title }, { type: typeToSet }, { new: true });
-    console.log("Blog updated type:", data);
-    done(null, data);
+    // Kiểm tra xem data có chứa category không
+    if (!data.category) {
+      return done(new Error("Category ID is required"));
+    }
+    
+    // Tìm và cập nhật blog theo title
+    const updatedBlog = await Blog.findOneAndUpdate(
+      { title }, 
+      { 
+        category: data.category,
+        updated_at: new Date() 
+      }, 
+      { new: true }
+    );
+    
+    // Kiểm tra xem blog có tồn tại không
+    if (!updatedBlog) {
+      return done(new Error(`Blog with title '${title}' not found`));
+    }
+    
+    console.log("Blog updated category:", updatedBlog); // Sửa log trả về blog đã cập nhật
+    done(null, updatedBlog);
   } catch (err) {
     console.error(err);
     done(err);
@@ -121,7 +158,13 @@ const findTypeAndUpdate = async (title, done) => {
 // Hàm xóa blog theo ID
 const removeBlogById = async (blogId, done) => {
   try {
-    const data = await Blog.findByIdAndRemove(blogId);
+    // Thay findByIdAndRemove bằng findByIdAndDelete
+    const data = await Blog.findByIdAndDelete(blogId);
+    
+    if (!data) {
+      return done(new Error("Blog not found"));
+    }
+    
     console.log("Blog removed:", data);
     done(null, data);
   } catch (err) {
@@ -131,12 +174,11 @@ const removeBlogById = async (blogId, done) => {
 };
 
 // Hàm xóa nhiều blog theo tiêu đề
-const removeManyBlogs = async (done) => {
+const removeManyBlogs = async (data, done) => {
   try {
-    const titleToRemove = "New Blog";
-    const data = await Blog.deleteMany({ title: titleToRemove });
-    console.log("Blogs removed:", data);
-    done(null, data);
+    const removedTitle = await Blog.deleteMany({ title: data.titleToRemove });
+    console.log("Blogs removed:", removedTitle);
+    done(null, removedTitle);
   } catch (err) {
     console.error(err);
     done(err);
@@ -144,16 +186,15 @@ const removeManyBlogs = async (done) => {
 };
 
 // Hàm truy vấn chuỗi blog
-const queryChainBlog = async (done) => {
+const queryChainBlog = async (data, done) => {
   try {
-    const typeToSearch = "Vegetable";
-    const data = await Blog.find({ type: typeToSearch })
+    const queryBlogs = await Blog.find({ type: data.type })
       .sort({ title: 1 })
       .limit(2)
       .select({ description: 0, content: 0, image: 0, video: 0 });
 
-    console.log("Query chain result:", data);
-    done(null, data);
+    console.log("Query chain result:", queryBlogs);
+    done(null, queryBlogs); // Sửa data → queryBlogs
   } catch (err) {
     console.error(err);
     done(err);
@@ -167,7 +208,7 @@ module.exports = {
   findOneByTitle,
   findBlogById,
   findBlogAndEdit,
-  findTypeAndUpdate,
+  findCategoryAndUpdate,
   removeBlogById,
   removeManyBlogs,
   queryChainBlog

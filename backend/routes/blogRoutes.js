@@ -42,21 +42,23 @@ router.get('/:id', (req, res) => {
   });
 });
 
-// Sửa blog theo ID
-router.put('/:id', (req, res) => {
-  blogsController.findBlogAndEdit(req.params.id, (err, data) => {
+// Sửa cateogry blog theo title
+router.put('/category/:title', (req, res) => {
+  blogsController.findCategoryAndUpdate(req.params.title, req.body, (err, data) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(data);
   });
 });
 
-// Sửa type blog theo title
-router.put('/type/:title', (req, res) => {
-  blogsController.findTypeAndUpdate(req.params.title, (err, data) => {
+// Sửa blog theo ID
+router.put('/:id', (req, res) => {
+  blogsController.findBlogAndEdit(req.params.id, req.body, (err, data) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(data);
   });
 });
+
+
 
 // Xóa blog theo ID
 router.delete('/:id', (req, res) => {
@@ -68,7 +70,7 @@ router.delete('/:id', (req, res) => {
 
 // Xóa nhiều blog theo title mặc định
 router.delete('/', (req, res) => {
-  blogsController.removeManyBlogs((err, data) => {
+  blogsController.removeManyBlogs(req.body, (err, data) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(data);
   });
@@ -76,7 +78,7 @@ router.delete('/', (req, res) => {
 
 // Query chain
 router.get('/', (req, res) => {
-  blogsController.queryChainBlog((err, data) => {
+  blogsController.queryChainBlog(req.body, (err, data) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(data);
   });
