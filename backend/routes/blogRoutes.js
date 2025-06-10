@@ -1,0 +1,85 @@
+const express = require('express');
+const router = express.Router();
+const blogsController = require('../controllers/blogs/blogsController');
+
+// Tạo blog mới
+router.post('/', (req, res) => {
+  blogsController.createAndSaveBlog((err, data) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.status(201).json(data);
+  });
+});
+
+// Tạo nhiều blog
+router.post('/many', (req, res) => {
+  blogsController.createManyBlogs(req.body, (err, data) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.status(201).json(data);
+  });
+});
+
+// Tìm blog theo ngày tạo
+router.get('/date/:date', (req, res) => {
+  blogsController.findBlogsByDate(req.params.date, (err, data) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(data);
+  });
+});
+
+// Tìm blog theo tiêu đề
+router.get('/title/:title', (req, res) => {
+  blogsController.findOneByTitle(req.params.title, (err, data) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(data);
+  });
+});
+
+// Tìm blog theo ID
+router.get('/:id', (req, res) => {
+  blogsController.findBlogById(req.params.id, (err, data) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(data);
+  });
+});
+
+// Sửa blog theo ID
+router.put('/:id', (req, res) => {
+  blogsController.findBlogAndEdit(req.params.id, (err, data) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(data);
+  });
+});
+
+// Sửa type blog theo title
+router.put('/type/:title', (req, res) => {
+  blogsController.findTypeAndUpdate(req.params.title, (err, data) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(data);
+  });
+});
+
+// Xóa blog theo ID
+router.delete('/:id', (req, res) => {
+  blogsController.removeBlogById(req.params.id, (err, data) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(data);
+  });
+});
+
+// Xóa nhiều blog theo title mặc định
+router.delete('/', (req, res) => {
+  blogsController.removeManyBlogs((err, data) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(data);
+  });
+});
+
+// Query chain
+router.get('/', (req, res) => {
+  blogsController.queryChainBlog((err, data) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(data);
+  });
+});
+
+module.exports = router;

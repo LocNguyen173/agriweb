@@ -3,7 +3,7 @@
     <HeroApp 
       title="Dịch Vụ Của Chúng Tôi" 
       subtitle="Cung cấp các dịch vụ nông nghiệp hàng đầu Việt Nam"
-      backgroundImage="https://via.placeholder.com/1920x400"
+      :backgroundImage="require('@/assets/images/services-banner.jpg')"
       showBreadcrumb
       currentPage="Dịch vụ"
     />
@@ -45,9 +45,9 @@
       description="Hãy liên hệ với chúng tôi ngay hôm nay để tận dụng các dịch vụ nông nghiệp hiện đại và chuyên nghiệp."
       primaryButtonText="Liên hệ ngay"
       primaryButtonLink="/contact"
-      secondaryButtonText="Tìm hiểu thêm"
-      secondaryButtonLink="/about"
-      backgroundImage="https://via.placeholder.com/1920x500"
+      secondaryButtonText="Xem thêm sản phẩm"
+      secondaryButtonLink="/products"
+      :backgroundImage="require('@/assets/images/cta-bg.jpg')"
     />
   </div>
 </template>

@@ -1,9 +1,12 @@
 <template>
   <div class="blog-page">
-    <div class="blog-hero">
-      <h1>Bài Viết Nông Nghiệp</h1>
-      <p>Chia sẻ kiến thức và kinh nghiệm về nông nghiệp</p>
-    </div>
+    <Hero
+      title="Bài Viết Nông Nghiệp"
+      subtitle="Chia sẻ kiến thức và kinh nghiệm về nông nghiệp"
+      :backgroundImage="require('@/assets/images/blog-hero.jpg')"
+      showBreadcrumb
+      currentPage="Bài viết"
+    />
     
     <div class="blog-container">
       <div class="blog-sidebar">
@@ -125,12 +128,14 @@
 </template>
 
 <script>
+import Hero from '@/components/Hero.vue'
 import BlogCard from '@/components/blogs/BlogCard.vue'
 import BlogDetail from '@/components/blogs/BlogDetail.vue'
 
 export default {
   name: 'BlogPage',
   components: {
+    Hero,
     BlogCard,
     BlogDetail
   },
@@ -219,19 +224,6 @@ export default {
 <style scoped>
 .blog-page {
   position: relative;
-}
-
-.blog-hero {
-  background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('@/assets/images/blog-hero.jpg') no-repeat center center;
-  background-size: cover;
-  padding: 100px 20px;
-  text-align: center;
-  color: white;
-}
-
-.blog-hero h1 {
-  font-size: 3rem;
-  margin-bottom: 20px;
 }
 
 .blog-container {

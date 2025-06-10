@@ -121,39 +121,39 @@ export default {
     return {
       featuredProducts: [
         {
-          name: 'Hạt giống lúa ST25',
-          category: 'Hạt giống',
+          name: 'MK54',
+          category: 'Thuốc trừ sâu',
           price: '250.000₫',
           rating: 5,
           reviewCount: 18,
-          image: 'https://via.placeholder.com/300x300',
+          image: require('@/assets/images/products/product1.jpg'),
           discount: 15
         },
         {
-          name: 'Phân bón hữu cơ vi sinh',
-          category: 'Phân bón',
+          name: 'MK-BEAMUSA',
+          category: 'Thuốc trừ bệnh',
           price: '180.000₫',
           oldPrice: '200.000₫',
           rating: 4,
           reviewCount: 12,
-          image: 'https://via.placeholder.com/300x300'
+          image: require('@/assets/images/products/product2.jpg')
         },
         {
-          name: 'Thuốc bảo vệ thực vật sinh học',
-          category: 'Thuốc BVTV',
+          name: 'VUA SÂU LÔNG',
+          category: 'Thuốc trừ sâu',
           price: '320.000₫',
           rating: 4,
           reviewCount: 7,
-          image: 'https://via.placeholder.com/300x300'
+          image: require('@/assets/images/products/product3.jpg')
         },
         {
-          name: 'Dụng cụ làm vườn cao cấp',
-          category: 'Dụng cụ',
+          name: 'CỎ XETANK',
+          category: 'Thuốc diệt cỏ',
           price: '450.000₫',
           oldPrice: '520.000₫',
           rating: 5,
           reviewCount: 15,
-          image: 'https://via.placeholder.com/300x300',
+          image: require('@/assets/images/products/product4.jpg'),
           discount: 10
         }
       ],
@@ -179,36 +179,36 @@ export default {
           icon: require('@/assets/images/icons/tractor.png')
         }
       ],
-      bestSellingProducts: [
+      bestSellingProducts: [ 
         {
-          name: 'Hạt giống rau sạch',
+          name: 'SIÊU TO CỦ',
           price: '45.000₫',
           oldPrice: '60.000₫',
-          image: 'https://via.placeholder.com/200x200'
+          image: require('@/assets/images/products/product5.jpg')
         },
         {
-          name: 'Phân bón hữu cơ',
+          name: 'CYRUS 250EC',
           price: '120.000₫',
           oldPrice: '150.000₫',
-          image: 'https://via.placeholder.com/200x200'
+          image: require('@/assets/images/products/product9.jpg')
         },
         {
-          name: 'Thuốc trừ sâu sinh học',
+          name: 'PHÂN BÓN HỮU CƠ WADA',
           price: '85.000₫',
           oldPrice: null,
-          image: 'https://via.placeholder.com/200x200'
+          image: require('@/assets/images/products/product6.jpg')
         },
         {
-          name: 'Kéo cắt tỉa cây',
+          name: 'KASU NHẬT',
           price: '220.000₫',
           oldPrice: '280.000₫',
-          image: 'https://via.placeholder.com/200x200'
+          image: require('@/assets/images/products/product7.jpg')
         },
         {
-          name: 'Hệ thống tưới nhỏ giọt',
+          name: 'MISTOP EXTRA 390',
           price: '350.000₫',
           oldPrice: null,
-          image: 'https://via.placeholder.com/200x200'
+          image: require('@/assets/images/products/product8.jpg')
         }
       ],
       productBenefits: [

@@ -10,7 +10,7 @@
           There are many variation of passa Morem Ipsum available, but the in majority have suffered.
         </p>
         <div class="social-links">
-          <h3>Follow Us:</h3>
+          <h3>Theo dõi tại:</h3>
           <div class="social-icons">
             <a href="#" class="social-icon"><i class="fab fa-facebook-f"></i></a>
             <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
@@ -22,30 +22,30 @@
 
       <!-- Quick Links Section -->
       <div class="footer-section">
-        <h3>Company Info:</h3>
+        <h3>Có thể bạn quan tâm:</h3>
         <ul class="footer-links">
-          <li><a href="#">Our Projects</a></li>
-          <li><a href="#">About Us</a></li>
-          <li><a href="#">Upcoming Events</a></li>
-          <li><a href="#">Our Services</a></li>
+          <li><a href="/products">Sản phẩm của công ty</a></li>
+          <li><a href="/contact">Về chúng tôi</a></li>
+          <li><a href="/blogs">Sự kiện sắp tới</a></li>
+          <li><a href="/services">Dịch vụ hỗ trợ</a></li>
         </ul>
       </div>
 
       <!-- Contact Info Section -->
       <div class="footer-section">
-        <h3>Company Info:</h3>
+        <h3>Thông tin công ty:</h3>
         <div class="contact-info">
           <div class="contact-item">
             <i class="fas fa-home"></i>
             <div>
-              <h4>Address</h4>
-              <p>10 South Building, Dhaka</p>
+              <h4>Địa chỉ</h4>
+              <p>E96 đường 56, KDC 586, Phường Phú Thứ, Quận Cái Răng, Thành phố Cần Thơ, Việt Nam</p>
             </div>
           </div>
           <div class="contact-item">
             <i class="fas fa-phone"></i>
             <div>
-              <h4>Telephone</h4>
+              <h4>Số điện thoại</h4>
               <p>(922) 3354 2252</p>
             </div>
           </div>
@@ -112,10 +112,19 @@ export default {
   margin-bottom: 40px;
 }
 
-.logo img {
-  height: 50px;
+.logo {
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 4px 24px 0 rgba(0,0,0,0.15);
+  padding: 20px 24px;
+  display: inline-block;
   margin-bottom: 20px;
 }
+
+.logo img {
+  height: 100px;
+}
+
 
 .description {
   margin-bottom: 25px;
@@ -188,6 +197,8 @@ export default {
 }
 
 .contact-item i {
+  min-width: 40px;
+  min-height: 40px;
   width: 40px;
   height: 40px;
   background-color: rgba(255, 255, 255, 0.1);
@@ -195,6 +206,8 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
+  font-size: 22px; /* Đảm bảo icon đủ lớn */
+  flex-shrink: 0;  /* Không co lại khi thiếu không gian */
 }
 
 .contact-item h4 {

@@ -37,7 +37,7 @@
       description="Chuyên gia của chúng tôi sẵn sàng hỗ trợ bạn. Hãy liên hệ ngay hôm nay để được tư vấn miễn phí."
       primaryButtonText="Liên hệ ngay"
       primaryButtonLink="/contact"
-      backgroundImage="https://via.placeholder.com/1920x500"
+      :backgroundImage="require('@/assets/images/cta-bg.jpg')"
     />
   </div>
 </template>

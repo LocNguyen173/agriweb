@@ -94,7 +94,7 @@ export default {
 }
 
 .logo img {
-  height: 50px;
+  height: 75px;
 }
 
 .desktop-menu ul {
