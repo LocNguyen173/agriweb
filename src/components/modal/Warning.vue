@@ -12,7 +12,12 @@
         </slot>
       </div>
       <div class="modal-footer">
-        <button class="modal-ok" @click="close">OK</button>
+        <button
+          v-if="showOk"
+          class="modal-ok"
+          @click="close"
+        >OK</button>
+        <slot name="footer"></slot>
       </div>
     </div>
   </div>
@@ -23,7 +28,8 @@ import { defineProps, defineEmits } from 'vue'
 
 defineProps({
   visible: { type: Boolean, default: false },
-  message: { type: String, default: 'Có điều gì đó cần chú ý!' }
+  message: { type: String, default: 'Có điều gì đó cần chú ý!' },
+  showOk: { type: Boolean, default: true } // Thêm prop này
 })
 
 const emit = defineEmits(['close'])

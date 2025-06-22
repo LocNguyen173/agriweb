@@ -4,8 +4,9 @@ const multer = require('multer');
 // Hàm để tải ảnh lên Firebase Storage
 async function productImageToFirebase(file) {
   // Kiểm tra mimetype hợp lệ
-  const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+  const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/jpg'];
   const mimetype = file.imageMimetype || file.mimetype || '';
+  console.log("Mimetype of uploaded file:", mimetype);
   if (!allowedTypes.includes(mimetype)) {
     console.error(`Invalid image type: ${mimetype}`);
     throw new Error("Chỉ cho phép các định dạng ảnh: jpeg, png, webp, gif");

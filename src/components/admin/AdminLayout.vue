@@ -19,7 +19,7 @@ import AdminSidebar from './AdminSidebar.vue'
 .admin-content {
   flex: 1;
   background: #f8f8f8;
-  padding: 32px;
+  padding: 5px 20px;
   margin-left: 240px; /* Phải bằng chiều rộng của sidebar */
   min-height: 100vh;
 }

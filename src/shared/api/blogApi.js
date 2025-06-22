@@ -46,6 +46,16 @@ const blogApi = {
     }
   },
 
+  getBlogContent: async (id) => {
+  try {
+    const response = await axiosInstance.get(`/api/blogs/content/${id}`)
+    return response.data
+  } catch (error) {
+    console.error(`Error fetching content for blog with ID ${id}:`, error)
+    throw error
+  }
+},
+
   /**
    * Find blogs by date
    * @param {string} date - Date in YYYY-MM-DD format
@@ -150,6 +160,21 @@ const blogApi = {
     } catch (error) {
       console.error('Error deleting multiple blogs:', error);
       throw error;
+    }
+  },
+
+  /**
+   * Upload ảnh từ trình soạn thảo rich text
+   * @param {Object} imageData - Dữ liệu hình ảnh (base64, tên, mime type)
+   * @returns {Promise} Promise object với URL của ảnh đã upload
+   */
+  uploadEditorImage: async (imageData) => {
+    try {
+      const response = await axiosInstance.post('/api/blogs/upload-editor-image', imageData)
+      return response.data
+    } catch (error) {
+      console.error('Lỗi upload ảnh từ trình soạn thảo:', error)
+      throw error
     }
   }
 }

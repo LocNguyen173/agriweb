@@ -1,10 +1,18 @@
 const { Blog } = require('../../config/model');
 const { blogImageToFirebase, deleteBlogImageByUrl } = require('../../utils/blogs/image.blogs');
-const { saveBlogTextToFirebase, deleteBlogTextFromFirebase } = require('../../utils/blogs/text.blogs');
+const { saveBlogTextToFirebase, deleteBlogTextFromFirebase, getBlogTextFromFirebase } = require('../../utils/blogs/text.blogs');
+
+const { v4: uuidv4 } = require('uuid'); // Thêm dòng này ở đầu file
+
 
 // Hàm tạo blog mới, truyền thêm categoryId
 const createAndSaveBlog = async (blogData, done) => {
   try {
+    // Nếu không có blogId thì tự sinh
+    if (!blogData.blogId || typeof blogData.blogId !== 'string' || !blogData.blogId.trim()) {
+      blogData.blogId = uuidv4();
+    }
+
     console.log("Received category:", blogData.category);
 
     const textUrl = await saveBlogTextToFirebase(blogData.blogId, blogData.content);
@@ -17,7 +25,8 @@ const createAndSaveBlog = async (blogData, done) => {
       const buffer = Buffer.from(imageBase64, 'base64');
       imageUrl = await blogImageToFirebase({ 
         originalname: imageName, 
-        buffer 
+        buffer,
+        imageMimetype: blogData.imageMimetype // <-- THÊM DÒNG NÀY
       });
     }
     // blogData phải chứa category (ObjectId của Category)
@@ -90,6 +99,16 @@ const findBlogsByDate = async (dateString, done) => {
   }
 };
 
+const getBlogContent = async (req, res) => {
+  try {
+    const blogId = req.params.blogId; // SỬA LẠI Ở ĐÂY
+    const text = await getBlogTextFromFirebase(blogId);
+    res.json({ text });
+  } catch (err) {
+    res.status(404).json({ error: 'Không tìm thấy nội dung bài viết' });
+  }
+};
+
 // Hàm tìm blog theo tiêu đề
 const findOneByTitle = async (title, done) => {
   try {
@@ -118,33 +137,32 @@ const findBlogById = async (blogId, done) => {
 const findBlogAndEdit = async (blogId, updateData, done) => {
   try {
     const blog = await Blog.findById(blogId);
-    const oldImageUrl = blog.image; // Lưu URL ảnh cũ để thay thế nếu cần
-    await deleteBlogImageByUrl(oldImageUrl); // Xóa ảnh cũ nếu có
+    if (!blog) return done(new Error("Blog not found"));
 
-    const imageBase64 = updateData.imageBase64;
-    const imageName = updateData.imageName;
-    // Nếu có ảnh, lưu ảnh
-    let imageUrl = null;
-    if (imageBase64 && imageName) {
-      const buffer = Buffer.from(imageBase64, 'base64');
+    // Xử lý ảnh mới
+    let imageUrl = blog.image;
+    if (updateData.imageBase64 && updateData.imageName) {
+      // Xóa ảnh cũ nếu có
+      if (blog.image) {
+        await deleteBlogImageByUrl(blog.image);
+      }
+      const buffer = Buffer.from(updateData.imageBase64, 'base64');
       imageUrl = await blogImageToFirebase({ 
-        originalname: imageName, 
-        buffer 
+        originalname: updateData.imageName, 
+        buffer,
+        imageMimetype: updateData.imageMimetype
       });
     }
 
     await deleteBlogTextFromFirebase(blogId); // Xóa văn bản cũ
     const textUrl = await saveBlogTextToFirebase(blogId, updateData.content);
 
-    if (!blog) return done(new Error("Blog not found"));
-
     // Cập nhật các trường cần thiết
     if (updateData.description) blog.description = updateData.description;
     if (updateData.title) blog.title = updateData.title;
     if (updateData.content) blog.content = textUrl;
-    // if (updateData.type) blog.type = updateData.type;
-    if (updateData.image) blog.image = imageUrl;
-    if (updateData.category) blog.category = updateData.category; // cập nhật category nếu có
+    if (imageUrl) blog.image = imageUrl; // <-- LUÔN cập nhật nếu có imageUrl mới
+    if (updateData.category) blog.category = updateData.category;
     blog.updated_at = new Date();
 
     const data = await blog.save();
@@ -238,9 +256,25 @@ const queryChainBlog = async (data, done) => {
   }
 };
 
+// Thêm function xử lý upload hình ảnh từ editor
+const uploadEditorImage = async (imageData, done) => {
+  try {
+    const { imageBase64, imageName, imageMimetype } = imageData
+    
+    // Upload ảnh lên Firebase Storage sử dụng hàm đã có
+    const imageUrl = await blogImageToFirebase(imageBase64, imageName, imageMimetype)
+    
+    done(null, { imageUrl })
+  } catch (err) {
+    done(err)
+  }
+}
+
+// Thêm vào exports
 module.exports = {
   createAndSaveBlog,
   createManyBlogs,
+  getBlogContent,
   findBlogsByDate,
   findOneByTitle,
   findBlogById,
@@ -248,5 +282,6 @@ module.exports = {
   findCategoryAndUpdate,
   removeBlogById,
   removeManyBlogs,
-  queryChainBlog
+  queryChainBlog,
+  uploadEditorImage
 };

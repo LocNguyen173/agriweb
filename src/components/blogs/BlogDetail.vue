@@ -10,15 +10,14 @@
       <div class="blog-detail-content">
         <div class="blog-meta">
           <span class="category">{{ getCategoryName(blog.category) }}</span>
-          <span class="date"><i class="fas fa-calendar"></i> {{ blog.date }}</span>
-          <span class="author"><i class="fas fa-user"></i> {{ blog.author }}</span>
+          <span class="date"><i class="fas fa-calendar"></i> {{ formatDate(blog.created_at) }}</span>
+          <span v-if="blog.author" class="author"><i class="fas fa-user"></i> {{ blog.author }}</span>
         </div>
         
         <h1>{{ blog.title }}</h1>
         
-        <div class="blog-content">
-          <p>{{ blog.content }}</p>
-        </div>
+        <!-- Thay đổi từ hiển thị text thuần sang rich HTML content -->
+        <div class="blog-content" v-html="sanitizedContent"></div>
         
         <div class="blog-actions">
           <div class="blog-share">
@@ -34,6 +33,10 @@
 </template>
 
 <script>
+import { ref, computed, onMounted } from 'vue'
+import blogApi from '@/shared/api/blogApi'
+import DOMPurify from 'dompurify' // Bạn cần cài đặt thư viện này: npm install dompurify
+
 export default {
   name: 'BlogDetail',
   props: {
@@ -42,14 +45,52 @@ export default {
       required: true
     }
   },
-  methods: {
-    getCategoryName(category) {
-      const categories = {
-        'farming': 'Canh tác',
-        'livestock': 'Chăn nuôi',
-        'tech': 'Công nghệ'
+  setup(props) {
+    const content = ref('')
+    
+    // Lọc nội dung HTML để tránh XSS attacks
+    const sanitizedContent = computed(() => {
+      return DOMPurify.sanitize(content.value || props.blog.content || '')
+    })
+    
+    onMounted(async () => {
+      // Nếu content là URL Firestore thì fetch nội dung thực
+      if (props.blog.content && props.blog.content.startsWith('https://console.firebase.google.com/')) {
+        try {
+          const response = await blogApi.getBlogContent(props.blog._id)
+          content.value = response.text || ''
+        } catch (err) {
+          console.error('Không thể tải nội dung bài viết:', err)
+        }
+      } else {
+        content.value = props.blog.content || ''
       }
-      return categories[category] || category
+    })
+    
+    function formatDate(date) {
+      const d = new Date(date)
+      return d.toLocaleDateString('vi-VN', { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      })
+    }
+    
+    function getCategoryName(category) {
+      // Nếu category là object
+      if (typeof category === 'object' && category !== null) {
+        return category.name || ''
+      }
+      
+      // Nếu là string hoặc id, trả về nguyên giá trị
+      return category || ''
+    }
+    
+    return {
+      content,
+      sanitizedContent,
+      formatDate,
+      getCategoryName
     }
   }
 }
@@ -146,6 +187,84 @@ export default {
   line-height: 1.8;
   color: #444;
   margin-bottom: 30px;
+}
+
+.blog-content :deep(h1) {
+  font-size: 2rem;
+  margin: 1.5rem 0 1rem;
+  color: #333;
+}
+
+.blog-content :deep(h2) {
+  font-size: 1.7rem;
+  margin: 1.3rem 0 0.8rem;
+  color: #444;
+}
+
+.blog-content :deep(h3) {
+  font-size: 1.4rem;
+  margin: 1.2rem 0 0.7rem;
+  color: #555;
+}
+
+.blog-content :deep(p) {
+  margin: 1rem 0;
+}
+
+.blog-content :deep(ul), .blog-content :deep(ol) {
+  margin: 1rem 0;
+  padding-left: 2rem;
+}
+
+.blog-content :deep(li) {
+  margin: 0.5rem 0;
+}
+
+.blog-content :deep(blockquote) {
+  border-left: 4px solid #4CAF50;
+  margin: 1.5rem 0;
+  padding: 0.8rem 1.5rem;
+  background: #f9f9f9;
+  font-style: italic;
+}
+
+.blog-content :deep(a) {
+  color: #4CAF50;
+  text-decoration: none;
+}
+
+.blog-content :deep(a:hover) {
+  text-decoration: underline;
+}
+
+.blog-content :deep(pre) {
+  background: #f5f5f5;
+  padding: 1rem;
+  border-radius: 8px;
+  overflow: auto;
+  font-family: monospace;
+}
+
+.blog-content :deep(img) {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  margin: 1rem 0;
+}
+
+.blog-content :deep(table) {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1rem 0;
+}
+
+.blog-content :deep(th), .blog-content :deep(td) {
+  border: 1px solid #ddd;
+  padding: 0.6rem;
+}
+
+.blog-content :deep(th) {
+  background-color: #f2f2f2;
 }
 
 .blog-actions {

@@ -9,7 +9,7 @@
         <div class="form-row">
           <input v-model="form.name" placeholder="Tên danh mục" required class="input" />
           <input v-model="form.description" placeholder="Mô tả" class="input" />
-          <select v-model="form.type" required class="input">
+          <select v-model="form.type" required class="input" :disabled="isEdit">
             <option disabled value="">Chọn loại danh mục</option>
             <option value="product">Sản phẩm</option>
             <option value="blog">Bài viết</option>
@@ -62,62 +62,162 @@
         </tbody>
       </table>
     </div>
+
+    <!-- Modal cảnh báo khi xóa -->
+    <Warning
+      :visible="showDeleteModal"
+      :message="deleteMessage"
+      :showOk="false"
+      @close="showDeleteModal = false"
+    >
+      <template #default>
+        <div>
+          <p>
+            <b>Lưu ý:</b> Sau khi xóa danh mục, bạn cần tự điều chỉnh lại danh mục cho các sản phẩm hoặc bài viết liên quan.<br>
+            Bạn có chắc chắn muốn xóa danh mục này không?
+          </p>
+          <div style="margin-top: 18px; text-align: right;">
+            <button class="btn danger" @click="showDeleteModal = false">Hủy</button>
+            <button class="btn primary" style="margin-left: 10px;" @click="confirmDeleteCategory">Xóa</button>
+          </div>
+        </div>
+      </template>
+    </Warning>
   </div>
 </template>
 
 <script setup>
-// TODO: Import API và khai báo reactive state
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import blogCategoryApi from '@/shared/api/blogCategoryApi'
+import productCategoryApi from '@/shared/api/productCategoryApi'
+import Warning from '@/components/modal/Warning.vue'
 
-// Dữ liệu giả cho thiết kế giao diện (FAKE DATA)
-const categories = ref([
-  {
-    _id: 'cat1',
-    name: 'Rau củ',
-    description: 'Các loại rau củ tươi sạch.',
-    type: 'product',
-    created_at: '2024-06-01T09:00:00Z'
-  },
-  {
-    _id: 'cat2',
-    name: 'Trái cây',
-    description: 'Trái cây nhập khẩu và nội địa.',
-    type: 'product',
-    created_at: '2024-06-02T10:30:00Z'
-  },
-  {
-    _id: 'cat3',
-    name: 'Kỹ thuật trồng trọt',
-    description: 'Chia sẻ kỹ thuật, kinh nghiệm trồng trọt.',
-    type: 'blog',
-    created_at: '2024-06-03T14:15:00Z'
-  },
-  {
-    _id: 'cat4',
-    name: 'Tin tức nông nghiệp',
-    description: 'Cập nhật tin tức ngành nông nghiệp.',
-    type: 'blog',
-    created_at: '2024-06-04T08:45:00Z'
-  }
-])
-// Kết thúc FAKE DATA
-
+const categories = ref([])
 const form = ref({
   name: '',
   description: '',
   type: ''
 })
 const isEdit = ref(false)
+const editId = ref(null)
 
-// TODO: onMounted() => load categories
+// Modal xóa
+const showDeleteModal = ref(false)
+const deleteId = ref(null)
+const deleteMessage = ref('')
 
-// TODO: createCategory() - Gọi API tạo danh mục
-// TODO: updateCategory() - Gọi API cập nhật danh mục
-// TODO: deleteCategory(id) - Gọi API xóa danh mục
-// TODO: editCategory(category) - Đổ dữ liệu vào form để sửa
-// TODO: cancelEdit() - Hủy chế độ sửa
+// Load tất cả danh mục (blog + product)
+const loadCategories = async () => {
+  try {
+    const [blogRes, productRes] = await Promise.all([
+      blogCategoryApi.getAllCategories(),
+      productCategoryApi.getAllCategories()
+    ])
+    // Gộp 2 loại danh mục
+    categories.value = [
+      ...productRes,
+      ...blogRes
+    ]
+  } catch (err) {
+    // Có thể hiển thị thông báo lỗi ở đây
+    console.error('Lỗi khi tải danh mục:', err)
+  }
+}
 
-// TODO: formatDate(date) - Hàm định dạng ngày cho bảng
+onMounted(() => {
+  loadCategories()
+})
+
+// Tạo mới danh mục
+const createCategory = async () => {
+  try {
+    if (form.value.type === 'product') {
+      await productCategoryApi.createCategory({
+        name: form.value.name,
+        description: form.value.description
+      })
+    } else if (form.value.type === 'blog') {
+      await blogCategoryApi.createCategory({
+        name: form.value.name,
+        description: form.value.description
+      })
+    }
+    await loadCategories()
+    form.value = { name: '', description: '', type: '' }
+  } catch (err) {
+    console.error('Lỗi khi tạo danh mục:', err)
+  }
+}
+
+// Sửa danh mục
+const editCategory = (category) => {
+  isEdit.value = true
+  editId.value = category._id
+  form.value = {
+    name: category.name,
+    description: category.description,
+    type: category.type
+  }
+}
+
+// Cập nhật danh mục
+const updateCategory = async () => {
+  try {
+    if (!editId.value) return
+    if (form.value.type === 'product') {
+      await productCategoryApi.updateCategory(editId.value, {
+        name: form.value.name,
+        description: form.value.description
+      })
+    } else if (form.value.type === 'blog') {
+      await blogCategoryApi.updateCategory(editId.value, {
+        name: form.value.name,
+        description: form.value.description
+      })
+    }
+    await loadCategories()
+    cancelEdit()
+  } catch (err) {
+    console.error('Lỗi khi cập nhật danh mục:', err)
+  }
+}
+
+// Xóa danh mục (hiển thị modal xác nhận)
+const deleteCategory = (id) => {
+  deleteId.value = id
+  showDeleteModal.value = true
+}
+
+// Xác nhận xóa danh mục
+const confirmDeleteCategory = async () => {
+  try {
+    const cate = categories.value.find(c => c._id === deleteId.value)
+    if (!cate) {
+      showDeleteModal.value = false
+      return
+    }
+    if (cate.type === 'product') {
+      await productCategoryApi.deleteCategory(deleteId.value)
+    } else if (cate.type === 'blog') {
+      await blogCategoryApi.deleteCategory(deleteId.value)
+    }
+    await loadCategories()
+  } catch (err) {
+    console.error('Lỗi khi xóa danh mục:', err)
+  } finally {
+    showDeleteModal.value = false
+    deleteId.value = null
+  }
+}
+
+// Hủy chế độ sửa
+const cancelEdit = () => {
+  isEdit.value = false
+  editId.value = null
+  form.value = { name: '', description: '', type: '' }
+}
+
+// Hàm định dạng ngày cho bảng
 function formatDate(date) {
   const d = new Date(date)
   return d.toLocaleDateString('vi-VN', { year: 'numeric', month: '2-digit', day: '2-digit' })
@@ -129,7 +229,7 @@ function formatDate(date) {
   max-width: 1000px;
   margin: 0 auto;
   font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
-  padding: 32px 0;
+  padding: 0 0 15px;
   background: #f8fafc;
   min-height: 100vh;
 }

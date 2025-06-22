@@ -1,5 +1,10 @@
 <template>
   <div class="admin-blog">
+    <Warning 
+      :visible="showWarning" 
+      :message="warningMessage" 
+      @close="showWarning = false" 
+    />
     <h1>Quản lý bài viết</h1>
     
     <!-- Form thêm/sửa bài viết -->
@@ -8,7 +13,24 @@
       <form @submit.prevent="isEdit ? updateBlog() : createBlog()">
         <div class="form-row">
           <input v-model="form.title" placeholder="Tiêu đề bài viết" required class="input" />
-          <input v-model="form.image" placeholder="Link ảnh (hoặc upload)" class="input" />
+          <div style="flex:1">
+            <!-- <input 
+              v-model="form.image" 
+              placeholder="Link ảnh" 
+              class="input" 
+              style="margin-bottom:6px"
+            /> -->
+            <input 
+              
+              type="file" 
+              accept="image/*" 
+              @change="handleImageUpload" 
+              class="input" 
+            />
+            <div v-if="previewImage" style="margin-top:8px">
+              <img :src="previewImage" alt="preview" style="max-width:80px;max-height:80px;border-radius:6px"/>
+            </div>
+          </div>
         </div>
         <div class="form-row">
           <textarea v-model="form.description" placeholder="Mô tả ngắn" required class="input textarea"></textarea>
@@ -20,8 +42,28 @@
             </option>
           </select>
         </div>
+        <!-- Thay thế textarea content cũ bằng TinyMCE -->
         <div class="form-row">
-          <textarea v-model="form.content" placeholder="Nội dung bài viết" required class="input textarea"></textarea>
+          <div class="editor-wrapper">
+            <Editor
+              v-model="form.content"
+              :api-key="tinymceApiKey"
+              :init="{
+                height: 300,
+                menubar: true,
+                plugins: [
+                  'advlist autolink lists link image charmap print preview anchor',
+                  'searchreplace visualblocks code fullscreen',
+                  'insertdatetime media table paste code help wordcount'
+                ],
+                toolbar:
+                  'undo redo | formatselect | bold italic backcolor | \
+                  alignleft aligncenter alignright alignjustify | \
+                  bullist numlist outdent indent | removeformat | link image | help',
+                images_upload_handler: handleEditorImageUpload
+              }"
+            />
+          </div>
         </div>
         <div class="form-actions">
           <button type="submit" class="btn primary">
@@ -78,47 +120,11 @@
 </template>
 
 <script setup>
-// Import ref để khai báo reactive state
-import { ref } from 'vue'
-
-// Dữ liệu giả cho danh mục bài viết (FAKE DATA)
-const categories = ref([
-  { _id: 'cat1', name: 'Kỹ thuật trồng trọt' },
-  { _id: 'cat2', name: 'Chia sẻ kinh nghiệm' },
-  { _id: 'cat3', name: 'Tin tức nông nghiệp' }
-])
-
-// Dữ liệu giả cho danh sách bài viết (FAKE DATA)
-const blogs = ref([
-  {
-    _id: 'b1',
-    title: 'Cách trồng rau sạch tại nhà',
-    image: 'https://via.placeholder.com/50x50?text=Blog1',
-    description: 'Hướng dẫn chi tiết các bước trồng rau sạch tại nhà.',
-    content: 'Nội dung chi tiết về cách trồng rau sạch...',
-    category: 'cat1',
-    created_at: '2024-06-01T10:00:00Z'
-  },
-  {
-    _id: 'b2',
-    title: 'Bí quyết chăm sóc cây ăn quả',
-    image: 'https://via.placeholder.com/50x50?text=Blog2',
-    description: 'Những lưu ý quan trọng khi chăm sóc cây ăn quả.',
-    content: 'Nội dung chi tiết về chăm sóc cây ăn quả...',
-    category: 'cat2',
-    created_at: '2024-06-10T14:30:00Z'
-  },
-  {
-    _id: 'b3',
-    title: 'Xu hướng nông nghiệp 2025',
-    image: 'https://via.placeholder.com/50x50?text=Blog3',
-    description: 'Cập nhật các xu hướng mới nhất trong lĩnh vực nông nghiệp.',
-    content: 'Nội dung chi tiết về xu hướng nông nghiệp...',
-    category: 'cat3',
-    created_at: '2024-06-15T08:15:00Z'
-  }
-])
-// Kết thúc FAKE DATA
+import { ref, onMounted } from 'vue'
+import blogApi from '@/shared/api/blogApi'
+import blogCategoryApi from '@/shared/api/blogCategoryApi'
+import Warning from '@/components/modal/Warning.vue'
+import Editor from '@tinymce/tinymce-vue'
 
 // State cho form và chế độ sửa
 const form = ref({
@@ -131,10 +137,47 @@ const form = ref({
 const isEdit = ref(false)
 let editingId = null
 
-// Lấy tên danh mục từ id (cho fake data)
-function getCategoryName(catId) {
-  const cat = categories.value.find(c => c._id === catId)
-  return cat ? cat.name : ''
+// State cho danh mục và danh sách bài viết
+const categories = ref([])
+const blogs = ref([])
+
+// State cho preview ảnh
+const previewImage = ref(null)
+
+// State cho cảnh báo
+const showWarning = ref(false)
+const warningMessage = ref('')
+
+const tinymceApiKey = process.env.VUE_APP_TINYMCE_API_KEY
+
+// Lấy danh sách blogs và categories từ API
+const fetchBlogs = async () => {
+  try {
+    const data = await blogApi.getAllBlogs()
+    blogs.value = Array.isArray(data) ? data : (data.blogs || [])
+  } catch (err) {
+    blogs.value = []
+  }
+}
+
+// Lấy danh sách category từ API
+const fetchCategories = async () => {
+  try {
+    const data = await blogCategoryApi.getAllCategories()
+    // Nếu API trả về mảng trực tiếp
+    categories.value = Array.isArray(data) ? data : (data.categories || [])
+  } catch (err) {
+    categories.value = []
+  }
+}
+
+// Lấy tên danh mục từ id
+function getCategoryName(cat) {
+  // Nếu là object
+  if (typeof cat === 'object' && cat !== null) return cat.name || ''
+  // Nếu là id
+  const found = categories.value.find(c => c._id === cat)
+  return found ? found.name : ''
 }
 
 // Hàm định dạng ngày cho bảng
@@ -143,41 +186,121 @@ function formatDate(date) {
   return d.toLocaleDateString('vi-VN', { year: 'numeric', month: '2-digit', day: '2-digit' })
 }
 
-// Tạo bài viết mới (FAKE)
-function createBlog() {
-  const newBlog = {
-    ...form.value,
-    _id: Date.now().toString(),
-    created_at: new Date().toISOString()
-  }
-  blogs.value.push(newBlog)
-  resetForm()
+// Thêm hàm xử lý upload ảnh trong trình soạn thảo
+function handleEditorImageUpload(blobInfo, progress) {
+  return new Promise((resolve, reject) => {
+    // Kiểm tra mime type
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/jpg']
+    if (!allowedTypes.includes(blobInfo.blob().type)) {
+      reject({ message: 'Định dạng ảnh không hỗ trợ', remove: true })
+      return
+    }
+    
+    // Kiểm tra kích thước (5MB)
+    if (blobInfo.blob().size > 5 * 1024 * 1024) {
+      reject({ message: 'Ảnh quá lớn (tối đa 5MB)', remove: true })
+      return
+    }
+    
+    const reader = new FileReader()
+    reader.onload = () => {
+      const base64 = reader.result.split(',')[1]
+       // Cập nhật tiến trình đọc file - 50%
+      progress(50)
+      
+      // Gọi API để upload ảnh lên Firebase Storage
+      blogApi.uploadEditorImage({
+        imageBase64: base64,
+        imageName: blobInfo.filename(),
+        imageMimetype: blobInfo.blob().type
+      })
+      .then(response => {
+        // Cập nhật tiến trình hoàn thành - 100%
+        progress(100)
+        // Trả về URL của ảnh đã upload
+        resolve(response.imageUrl)
+      })
+      .catch(error => {
+        console.error('Lỗi upload ảnh:', error)
+        reject({ message: 'Lỗi upload ảnh', remove: true })
+      })
+    }
+    // Cập nhật tiến trình bắt đầu đọc file - 20%
+    progress(20)
+    reader.readAsDataURL(blobInfo.blob())
+  })
 }
 
-// Cập nhật bài viết (FAKE)
-function updateBlog() {
-  const idx = blogs.value.findIndex(b => b._id === editingId)
-  if (idx !== -1) {
-    blogs.value[idx] = { ...form.value, _id: editingId, created_at: blogs.value[idx].created_at }
+// Cập nhật hàm createBlog để xử lý nội dung rich text
+async function createBlog() {
+  try {
+    const payload = { ...form.value }
+    payload.blogId = Date.now().toString()
+    
+    // Lưu nội dung HTML vào Firestore
+    const newBlog = await blogApi.createBlog(payload)
+    
+    // Thêm blog mới vào danh sách
+    const category = categories.value.find(c => c._id === newBlog.category)
+    newBlog.categoryName = category ? category.name : ''
+    blogs.value.push(newBlog)
+    resetForm()
+    previewImage.value = null
+  } catch (err) {
+    console.error('Tạo bài viết thất bại:', err)
+    warningMessage.value = 'Tạo bài viết thất bại. Vui lòng thử lại.'
+    showWarning.value = true
   }
-  resetForm()
-  isEdit.value = false
-  editingId = null
 }
 
-// Xóa bài viết (FAKE)
-function deleteBlog(id) {
-  blogs.value = blogs.value.filter(b => b._id !== id)
-  if (isEdit.value && editingId === id) {
-    cancelEdit()
+// Cập nhật bài viết
+async function updateBlog() {
+  try {
+    const payload = { ...form.value }
+    await blogApi.updateBlog(editingId, payload)
+    await fetchBlogs() // Refresh danh sách sau khi cập nhật thành công
+    resetForm()
+    isEdit.value = false
+    editingId = null
+    previewImage.value = null // Reset preview ảnh
+  } catch (err) {
+    console.error('Cập nhật bài viết thất bại:', err)
+    warningMessage.value = 'Cập nhật bài viết thất bại. Vui lòng thử lại.'
+    showWarning.value = true
+  }
+}
+
+// Xóa bài viết
+async function deleteBlog(id) {
+  try {
+    await blogApi.deleteBlog(id)
+    await fetchBlogs()
+    if (isEdit.value && editingId === id) {
+      cancelEdit()
+    }
+  } catch (err) {
+    console.error('Xóa bài viết thất bại:', err)
   }
 }
 
 // Đổ dữ liệu vào form để sửa
-function editBlog(blog) {
+async function editBlog(blog) {
   form.value = { ...blog }
   isEdit.value = true
   editingId = blog._id
+  previewImage.value = blog.image || null
+
+  // Nếu content là URL Firestore thì fetch nội dung thực
+  if (blog.content && blog.content.startsWith('https://console.firebase.google.com/')) {
+    form.value.content = '' // Ẩn url firestore trong lúc chờ fetch
+    try {
+      // Gọi API backend để lấy nội dung thực
+      const res = await blogApi.getBlogContent(blog._id)
+      form.value.content = res.text || ''
+    } catch (err) {
+      form.value.content = ''
+    }
+  }
 }
 
 // Hủy chế độ sửa
@@ -185,6 +308,7 @@ function cancelEdit() {
   resetForm()
   isEdit.value = false
   editingId = null
+  previewImage.value = null
 }
 
 // Reset form
@@ -194,9 +318,19 @@ function resetForm() {
     image: '',
     description: '',
     content: '',
-    category: ''
+    category: '',
+    // Thêm các trường liên quan đến ảnh để reset
+    imageBase64: null,
+    imageName: null,
+    imageMimetype: null
   }
 }
+
+// Fetch dữ liệu khi component mount
+onMounted(() => {
+  fetchBlogs()
+  fetchCategories()
+})
 </script>
 
 <style scoped>
@@ -204,7 +338,7 @@ function resetForm() {
   max-width: 1000px;
   margin: 0 auto;
   font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
-  padding: 32px 0;
+  padding: 0 0 25px;
   background: #f8fafc;
   min-height: 100vh;
 }
@@ -250,6 +384,54 @@ h1 {
   background: #f6f7fb;
   transition: border 0.2s, box-shadow 0.2s;
   outline: none;
+}
+.input[type="file"] {
+  padding: 10px 0px 0px 16px;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 1rem;
+  background: #f6f7fb;
+  height: 42px;
+  line-height: 20px;
+  cursor: pointer;
+  color: #222;
+}
+.input[type="file"]:focus {
+  border: 1.5px solid #4f8cff;
+  box-shadow: 0 0 0 2px #e3f0ff;
+  background: #fff;
+}
+.input[type="file"]::-webkit-file-upload-button {
+  background: #e3f0ff;
+  border: none;
+  border-radius: 6px;
+  padding: 7px 16px;
+  color: #2563eb;
+  font-weight: 500;
+  cursor: pointer;
+  margin-right: 10px;
+  font-size: 1rem;
+  transition: background 0.2s;
+}
+.input[type="file"]:hover::-webkit-file-upload-button {
+  background: #4f8cff;
+  color: #fff;
+}
+.input[type="file"]::file-selector-button {
+  background: #e3f0ff;
+  border: none;
+  border-radius: 6px;
+  padding: 7px 16px;
+  color: #2563eb;
+  font-weight: 500;
+  cursor: pointer;
+  margin-right: 10px;
+  font-size: 1rem;
+  transition: background 0.2s;
+}
+.input[type="file"]:hover::file-selector-button {
+  background: #4f8cff;
+  color: #fff;
 }
 .input:focus {
   border: 1.5px solid #4f8cff;
@@ -409,5 +591,26 @@ h1 {
     padding: 8px 6px;
     font-size: 0.95rem;
   }
+}
+
+/* Thêm CSS cho editor */
+.editor-wrapper {
+  width: 100%;
+}
+:deep(.tox-tinymce) {
+  border-radius: 8px;
+  border: 1.5px solid #e0e0e0;
+}
+:deep(.tox-editor-container) {
+  background-color: #fff;
+}
+:deep(.tox-statusbar) {
+  border-top: 1px solid #e0e0e0 !important;
+}
+:deep(.tox-statusbar__wordcount) {
+  color: #666;
+}
+:deep(.tox-statusbar__path) {
+  color: #666;
 }
 </style>

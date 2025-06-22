@@ -261,7 +261,7 @@ function resetForm() {
   max-width: 1000px;
   margin: 0 auto;
   font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
-  padding: 32px 0;
+  padding: 0 0 25px;
   background: #f8fafc;
   min-height: 100vh;
 }
@@ -307,6 +307,54 @@ h1 {
   background: #f6f7fb;
   transition: border 0.2s, box-shadow 0.2s;
   outline: none;
+}
+.input[type="file"] {
+  padding: 10px 0px 0px 16px;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 1rem;
+  background: #f6f7fb;
+  height: 42px;
+  line-height: 20px;
+  cursor: pointer;
+  color: #222;
+}
+.input[type="file"]:focus {
+  border: 1.5px solid #4f8cff;
+  box-shadow: 0 0 0 2px #e3f0ff;
+  background: #fff;
+}
+.input[type="file"]::-webkit-file-upload-button {
+  background: #e3f0ff;
+  border: none;
+  border-radius: 6px;
+  padding: 7px 16px;
+  color: #2563eb;
+  font-weight: 500;
+  cursor: pointer;
+  margin-right: 10px;
+  font-size: 1rem;
+  transition: background 0.2s;
+}
+.input[type="file"]:hover::-webkit-file-upload-button {
+  background: #4f8cff;
+  color: #fff;
+}
+.input[type="file"]::file-selector-button {
+  background: #e3f0ff;
+  border: none;
+  border-radius: 6px;
+  padding: 7px 16px;
+  color: #2563eb;
+  font-weight: 500;
+  cursor: pointer;
+  margin-right: 10px;
+  font-size: 1rem;
+  transition: background 0.2s;
+}
+.input[type="file"]:hover::file-selector-button {
+  background: #4f8cff;
+  color: #fff;
 }
 .input:focus {
   border: 1.5px solid #4f8cff;
