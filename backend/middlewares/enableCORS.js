@@ -1,16 +1,21 @@
 module.exports = function (req, res, next) {
-  if (!process.env.DISABLE_XORIGIN) {
-    const allowedOrigins = ["https://www.agriweb.com", "https://agriweb.com"];
-    const origin = req.headers.origin;
-    if (!process.env.XORIGIN_RESTRICT || allowedOrigins.indexOf(origin) > -1) {
-      console.log(req.method);
-      res.set({
-        "Access-Control-Allow-Origin": origin,
-        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-        "Access-Control-Allow-Headers":
-          "Origin, X-Requested-With, Content-Type, Accept",
-      });
-    }
+  const allowedOrigins = [
+    "https://www.agriweb.com",
+    "https://agriweb.com",
+    "http://localhost:8080"
+  ];
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+    res.setHeader(
+      "Access-Control-Allow-Headers",
+      "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+    );
+    res.setHeader("Access-Control-Allow-Credentials", "true"); // Nếu dùng credentials
+  }
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200);
   }
   next();
 };

@@ -1,8 +1,8 @@
 <template>
   <div id="app">
-    <AppHeader />
+    <AppHeader v-if="!$route.meta.hideHeaderFooter" />
     <router-view></router-view>
-    <AppFooter />
+    <AppFooter v-if="!$route.meta.hideHeaderFooter" />
     <ScrollToTop />
   </div>
 </template>

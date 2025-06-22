@@ -17,7 +17,7 @@ const blogSchema = new mongoose.Schema({
     content: { type: String, required: true },
     // type: { type: String, required: true }, // ví dụ: 'news', 'review', v.v.
     image: { type: String },
-    video: { type: String },
+    // video: { type: String },
     category: { type: mongoose.Schema.Types.ObjectId, ref: 'Category', required: true }, // liên kết danh mục
     created_at: { type: Date, default: Date.now },
     updated_at: { type: Date, default: Date.now },
@@ -35,6 +35,12 @@ const productSchema = new mongoose.Schema({
     updated_at: { type: Date, default: Date.now },
 });
 
+const userSchema = new mongoose.Schema({
+    username: { type: String, required: true, unique: true },
+    password: { type: String, required: true }
+});
+
+
 // ===== Service Schema =====
 // const serviceSchema = new mongoose.Schema({
 //     serviceId: { type: String, required: true, unique: true },
@@ -49,6 +55,7 @@ const productSchema = new mongoose.Schema({
 const Category = mongoose.model('Category', categorySchema);
 const Blog = mongoose.model('Blog', blogSchema);
 const Product = mongoose.model('Product', productSchema);
+const User = mongoose.model('User', userSchema);
 // const Service = mongoose.model('Service', serviceSchema);
 
 // ===== Xuất các Model =====
@@ -56,5 +63,6 @@ module.exports = {
     Category,
     Blog,
     Product,
+    User
     // Service
 };

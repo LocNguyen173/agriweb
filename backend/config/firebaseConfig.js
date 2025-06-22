@@ -1,25 +1,21 @@
-require("dotenv").config();
+// filepath: d:\Workspaces\agriweb\backend\config\firebaseConfig.js
+import admin from "firebase-admin";
+import path from "path";
+import { fileURLToPath } from "url";
+import fs from "fs";
 
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getStorage } from "firebase/storage";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const serviceAccount = JSON.parse(fs.readFileSync(path.join(__dirname, "serviceAccountKey.json"), "utf8"));
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: process.env.FIREBASE_API_KEY,
-  authDomain: "agriweb-b3d1f.firebaseapp.com",
-  projectId: "agriweb-b3d1f",
-  storageBucket: "agriweb-b3d1f.appspot.com",
-  messagingSenderId: "598190491714",
-  appId: "1:598190491714:web:d83f4c49319779b3e6c5db",
-  measurementId: "G-L0JC8GESY1"
-};
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+    storageBucket: "gs://agriweb-b3d1f.firebasestorage.app"
+  });
+}
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const storage = getStorage(app);
+const db = admin.firestore();
+const storage = admin.storage().bucket();
 
-export { storage };
+export { admin, db, storage };

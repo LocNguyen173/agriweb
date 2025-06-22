@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const blogsController = require('../controllers/blogs/blogsController');
+const { Blog } = require('../config/model');
 
 // Tạo blog mới
 router.post('/', (req, res) => {
@@ -32,6 +33,13 @@ router.get('/title/:title', (req, res) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(data);
   });
+});
+
+router.get('/all', (req, res) => {
+  Blog.find({})
+    .populate('category')
+    .then(data => res.json(data))
+    .catch(err => res.status(500).json({ error: err.message }));
 });
 
 // Tìm blog theo ID

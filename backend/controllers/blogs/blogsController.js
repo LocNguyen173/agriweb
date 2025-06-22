@@ -1,19 +1,34 @@
 const { Blog } = require('../../config/model');
+const { blogImageToFirebase, deleteBlogImageByUrl } = require('../../utils/blogs/image.blogs');
+const { saveBlogTextToFirebase, deleteBlogTextFromFirebase } = require('../../utils/blogs/text.blogs');
 
 // Hàm tạo blog mới, truyền thêm categoryId
 const createAndSaveBlog = async (blogData, done) => {
   try {
     console.log("Received category:", blogData.category);
 
+    const textUrl = await saveBlogTextToFirebase(blogData.blogId, blogData.content);
+
+    const imageBase64 = blogData.imageBase64;
+    const imageName = blogData.imageName;
+    // Nếu có ảnh, lưu ảnh
+    let imageUrl = null;
+    if (imageBase64 && imageName) {
+      const buffer = Buffer.from(imageBase64, 'base64');
+      imageUrl = await blogImageToFirebase({ 
+        originalname: imageName, 
+        buffer 
+      });
+    }
     // blogData phải chứa category (ObjectId của Category)
     const blog = new Blog({
       blogId: blogData.blogId,
       title: blogData.title,
       description: blogData.description,
-      content: blogData.content,
-      // type: blogData.type,
-      image: blogData.image,
-      video: blogData.video,
+      content: textUrl,
+      // // type: blogData.type,
+      image: imageUrl,
+      // video: blogData.video,
       category: blogData.category, // ObjectId
       created_at: new Date(),
       updated_at: new Date()
@@ -103,15 +118,32 @@ const findBlogById = async (blogId, done) => {
 const findBlogAndEdit = async (blogId, updateData, done) => {
   try {
     const blog = await Blog.findById(blogId);
+    const oldImageUrl = blog.image; // Lưu URL ảnh cũ để thay thế nếu cần
+    await deleteBlogImageByUrl(oldImageUrl); // Xóa ảnh cũ nếu có
+
+    const imageBase64 = updateData.imageBase64;
+    const imageName = updateData.imageName;
+    // Nếu có ảnh, lưu ảnh
+    let imageUrl = null;
+    if (imageBase64 && imageName) {
+      const buffer = Buffer.from(imageBase64, 'base64');
+      imageUrl = await blogImageToFirebase({ 
+        originalname: imageName, 
+        buffer 
+      });
+    }
+
+    await deleteBlogTextFromFirebase(blogId); // Xóa văn bản cũ
+    const textUrl = await saveBlogTextToFirebase(blogId, updateData.content);
+
     if (!blog) return done(new Error("Blog not found"));
 
     // Cập nhật các trường cần thiết
     if (updateData.description) blog.description = updateData.description;
     if (updateData.title) blog.title = updateData.title;
-    if (updateData.content) blog.content = updateData.content;
+    if (updateData.content) blog.content = textUrl;
     // if (updateData.type) blog.type = updateData.type;
-    if (updateData.image) blog.image = updateData.image;
-    if (updateData.video) blog.video = updateData.video;
+    if (updateData.image) blog.image = imageUrl;
     if (updateData.category) blog.category = updateData.category; // cập nhật category nếu có
     blog.updated_at = new Date();
 
@@ -160,6 +192,11 @@ const removeBlogById = async (blogId, done) => {
   try {
     // Thay findByIdAndRemove bằng findByIdAndDelete
     const data = await Blog.findByIdAndDelete(blogId);
+    await deleteBlogTextFromFirebase(blogId); // Xóa văn bản blog khỏi Firestore
+
+    if (data && data.image) {
+      await deleteBlogImageByUrl(data.image); // Xóa ảnh blog khỏi Firebase nếu có
+    }
     
     if (!data) {
       return done(new Error("Blog not found"));

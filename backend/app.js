@@ -1,5 +1,6 @@
 const express = require('express');
 const connectDB = require('./db');
+const userRoutes = require('./routes/userRoutes');
 const blogRoutes = require('./routes/blogRoutes');
 const blogCateRoutes = require('./routes/blogCateRoutes');
 const productRoutes = require('./routes/productRoutes');
@@ -16,10 +17,12 @@ connectDB();
 
 // Middleware
 app.use(enableCORS);
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
+app.use(bodyParser.json({ limit: '5mb' }));
+app.use(bodyParser.urlencoded({ limit: '5mb', extended: true }));
 
 // Routes
+app.use('/api/users', userRoutes);
+
 app.use('/api/blogs', blogRoutes);
 
 app.use('/api/blog-categories', blogCateRoutes);

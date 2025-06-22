@@ -2,6 +2,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomePage from '@/views/home/Home.vue'
 import BlogPage from '@/views/blogs/Blogs.vue'
 import ContactPage from '@/views/contact/Contact.vue'
+import Login from '@/views/login/Login.vue'
+import AdminLayout from '@/components/admin/AdminLayout.vue'
 
 const routes = [
   {
@@ -29,6 +31,35 @@ const routes = [
     name: 'Contact',
     component: ContactPage
   },
+  {
+    path: '/login',
+    name: 'Login',
+    component: Login,
+    meta: { hideHeaderFooter: true }
+  },
+  {
+    path: '/admin',
+    component: AdminLayout,
+    meta: { hideHeaderFooter: true },
+    children: [
+      {
+        path: 'categories',
+        component: () => import('@/views/admin/AdminCategory.vue')
+      },
+      {
+        path: 'products',
+        component: () => import('@/views/admin/AdminProduct.vue')
+      },
+      {
+        path: 'posts',
+        component: () => import('@/views/admin/AdminBlog.vue')
+      },
+      {
+        path: '',
+        component: () => import('@/views/admin/Dashboard.vue')
+      }
+    ]
+  }
 //   {
 //     path: '/about',
 //     name: 'About',

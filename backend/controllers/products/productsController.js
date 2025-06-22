@@ -1,20 +1,33 @@
 const { Product } = require('../../config/model');
+const { productImageToFirebase, deleteProductImageByUrl } = require('../../utils/products/image.product');
 
+// Tạo Product mới, upload ảnh lên Firebase nếu có
 const createAndSaveProduct = async (productData, done) => {
   try {
     console.log("Received category:", productData.category);
-    
+
     if (!productData.category) {
       return done(new Error("Category ID is required"));
     }
-    
+
+    let imageUrl = productData.image || null;
+    // Nếu có imageBase64 và imageName thì upload lên Firebase
+    if (productData.imageBase64 && productData.imageName) {
+      const buffer = Buffer.from(productData.imageBase64, 'base64');
+      imageUrl = await productImageToFirebase({
+        originalname: productData.imageName,
+        buffer,
+        mimetype: productData.imageMimetype || 'image/jpeg'
+      });
+    }
+
     const product = new Product({
       productId: productData.productId || "prod123",
       name: productData.name || "New Product",
       description: productData.description || "This is a description of my first product.",
       price: productData.price || 100,
-      image: productData.image || "https://example.com/product.jpg",
-      category: productData.category, // ObjectId reference to Category
+      image: imageUrl,
+      category: productData.category,
       created_at: new Date(),
       updated_at: new Date()
     });
@@ -94,17 +107,33 @@ const findProductById = async (productId, done) => {
   }
 };
 
+// Cập nhật Product, nếu có ảnh mới thì xóa ảnh cũ trên Firebase và upload ảnh mới
 const findProductAndEdit = async (productId, updateData, done) => {
   try {
     const product = await Product.findById(productId);
     if (!product) return done(new Error("Product not found"));
 
-    // Update fields if provided
+    // Xử lý ảnh mới
+    let imageUrl = product.image;
+    if (updateData.imageBase64 && updateData.imageName) {
+      // Xóa ảnh cũ nếu có
+      if (product.image) {
+        await deleteProductImageByUrl(product.image);
+      }
+      const buffer = Buffer.from(updateData.imageBase64, 'base64');
+      imageUrl = await productImageToFirebase({
+        originalname: updateData.imageName,
+        buffer,
+        mimetype: updateData.imageMimetype || 'image/jpeg'
+      });
+    }
+
+    // Cập nhật các trường
     if (updateData.description) product.description = updateData.description;
     if (updateData.name) product.name = updateData.name;
     if (updateData.price) product.price = updateData.price;
-    if (updateData.image) product.image = updateData.image;
-    if (updateData.category) product.category = updateData.category; // Update category if provided
+    if (imageUrl) product.image = imageUrl;
+    if (updateData.category) product.category = updateData.category;
     product.updated_at = new Date();
 
     const data = await product.save();
@@ -116,69 +145,19 @@ const findProductAndEdit = async (productId, updateData, done) => {
   }
 };
 
-const findCategoryAndUpdate = async (name, categoryData, done) => {
-  try {
-    // Check if category is provided
-    if (!categoryData || !categoryData.category) {
-      return done(new Error("Category ID is required"));
-    }
-    
-    const data = await Product.findOneAndUpdate(
-      { name }, 
-      { 
-        category: categoryData.category,
-        updated_at: new Date() 
-      }, 
-      { new: true }
-    );
-    
-    if (!data) {
-      return done(new Error(`Product with name '${name}' not found`));
-    }
-    
-    console.log("Product updated category:", data);
-    done(null, data);
-  } catch (err) {
-    console.error(err);
-    done(err);
-  }
-};
-
-const findPriceAndUpdate = async (name, priceData, done) => {
-  try {
-    if (!priceData || !priceData.price) {
-      return done(new Error("Price is required"));
-    }
-    
-    const data = await Product.findOneAndUpdate(
-      { name }, 
-      { 
-        price: priceData.price,
-        updated_at: new Date() 
-      }, 
-      { new: true }
-    );
-    
-    if (!data) {
-      return done(new Error(`Product with name '${name}' not found`));
-    }
-    
-    console.log("Product updated price:", data);
-    done(null, data);
-  } catch (err) {
-    console.error(err);
-    done(err);
-  }
-};
-
+// Xóa Product, đồng thời xóa ảnh khỏi Firebase nếu có
 const removeProductById = async (productId, done) => {
   try {
     const data = await Product.findByIdAndDelete(productId);
-    
+
     if (!data) {
       return done(new Error("Product not found"));
     }
-    
+
+    if (data.image) {
+      await deleteProductImageByUrl(data.image);
+    }
+
     console.log("Product removed:", data);
     done(null, data);
   } catch (err) {
@@ -243,8 +222,8 @@ module.exports = {
   findOneByName,
   findProductById,
   findProductAndEdit,
-  findCategoryAndUpdate,
-  findPriceAndUpdate,
+  // findCategoryAndUpdate,
+  // findPriceAndUpdate,
   removeProductById,
   removeManyProducts,
   queryChainProduct,

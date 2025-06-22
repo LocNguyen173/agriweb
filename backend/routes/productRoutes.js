@@ -34,6 +34,14 @@ router.get('/name/:name', (req, res) => {
   });
 });
 
+router.get('/all', (req, res) => {
+  const { Product } = require('../config/model');
+  Product.find({})
+    .populate('category')
+    .then(data => res.json(data))
+    .catch(err => res.status(500).json({ error: err.message }));
+});
+
 // Tìm sản phẩm theo ID
 router.get('/:id', (req, res) => {
   productsController.findProductById(req.params.id, (err, data) => {
@@ -81,5 +89,7 @@ router.get('/', (req, res) => {
     res.json(data);
   });
 });
+
+
 
 module.exports = router;
