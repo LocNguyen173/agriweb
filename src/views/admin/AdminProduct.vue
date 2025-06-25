@@ -13,22 +13,16 @@
       <form @submit.prevent="isEdit ? updateProduct() : createProduct()">
         <div class="form-row">
           <input v-model="form.name" placeholder="Tên sản phẩm" required class="input" />
-          <input v-model="form.price" type="number" placeholder="Giá" required class="input" />
+          <input v-model="form.price" type="number" placeholder="Giá" class="input" />
         </div>
         <div class="form-row">
           <div style="flex:1">
-            <!-- <input 
-              v-model="form.image" 
-              placeholder="Link ảnh" 
-              class="input" 
-              style="margin-bottom:6px"
-            /> -->
             <input 
-              
               type="file" 
               accept="image/*" 
               @change="handleImageUpload" 
               class="input" 
+              ref="fileInputRef"
             />
             <div v-if="previewImage" style="margin-top:8px">
               <img :src="previewImage" alt="preview" style="max-width:80px;max-height:80px;border-radius:6px"/>
@@ -36,7 +30,6 @@
           </div>
           <select v-model="form.category" required class="input">
             <option disabled value="">Chọn danh mục</option>
-            <!-- TODO: Render danh sách category -->
             <option v-for="cat in categories" :key="cat._id" :value="cat._id">
               {{ cat.name }}
             </option>
@@ -44,6 +37,12 @@
         </div>
         <div class="form-row">
           <textarea v-model="form.description" placeholder="Mô tả" class="input textarea"></textarea>
+        </div>
+        <div class="form-row favorite-row">
+          <label class="favorite-checkbox">
+            <input type="checkbox" v-model="form.isFavorite" />
+            <span class="star">⭐</span> Bán chạy
+          </label>
         </div>
         <div class="form-actions">
           <button type="submit" class="btn primary">
@@ -67,16 +66,20 @@
             <th>Ảnh</th>
             <th>Danh mục</th>
             <th>Mô tả</th>
+            <th>Bán chạy</th>
             <th>Hành động</th>
           </tr>
         </thead>
         <tbody>
           <!-- TODO: Render danh sách sản phẩm -->
           <tr v-for="product in products" :key="product._id" class="table-row">
-            <td>{{ product.name }}</td>
+            <td>
+              {{ product.name }}
+              <!-- <span v-if="product.isFavorite" class="star-badge" title="Bán chạy">⭐</span> -->
+            </td>
             <td>{{ product.price.toLocaleString() }}₫</td>
             <td>
-              <div class="img-thumb">
+              <div class="img-thumb" @click="openImageModal(product.image)">
                 <img :src="product.image" alt="" />
               </div>
             </td>
@@ -86,6 +89,9 @@
               </span>
             </td> 
             <td>{{ product.description }}</td>
+            <td>
+              <span v-if="product.isFavorite" class="star-badge" title="Bán chạy">⭐</span>
+            </td>
             <td>
               <button @click="editProduct(product)" class="btn icon edit" title="Sửa">
                 ✏️
@@ -98,6 +104,13 @@
         </tbody>
       </table>
     </div>
+
+    <!-- Modal xem ảnh lớn -->
+    <ImageModal 
+      :visible="showImageModal"
+      :imageUrl="modalImageUrl" 
+      @close="closeImageModal" 
+    />
   </div>
 </template>
 
@@ -105,9 +118,10 @@
 import { ref, onMounted } from 'vue'
 import productApi from '@/shared/api/productApi'
 import productCategoryApi from '@/shared/api/productCategoryApi'
-
 import Warning from '@/components/modal/Warning.vue'
-// import axiosInstance from '@/shared/utils/axios'
+import ImageModal from '@/components/modal/ImageModal.vue'
+
+const fileInputRef = ref(null)
 
 // State
 const categories = ref([])
@@ -118,10 +132,15 @@ const form = ref({
   price: '',
   image: '',
   description: '',
-  category: ''
+  category: '',
+  isFavorite: false
 })
 const isEdit = ref(false)
 let editingId = null
+
+// Modal xem ảnh lớn
+const showImageModal = ref(false)
+const modalImageUrl = ref('')
 
 // Load categories và products từ API khi component mount
 onMounted(async () => {
@@ -233,7 +252,9 @@ async function deleteProduct(id) {
 
 // Sửa sản phẩm
 function editProduct(product) {
-  form.value = { ...product }
+  form.value = { ...product,
+    isFavorite: !!product.isFavorite
+   }
   isEdit.value = true
   editingId = product._id
 }
@@ -251,7 +272,31 @@ function resetForm() {
     price: '',
     image: '',
     description: '',
-    category: ''
+    category: '',
+    isFavorite: false
+  }
+  previewImage.value = ''
+  if (fileInputRef.value) fileInputRef.value.value = ''
+}
+
+// Mở modal xem ảnh lớn
+function openImageModal(url) {
+  try {
+    console.log('Mở modal ảnh với url:', url)
+    modalImageUrl.value = url
+    showImageModal.value = true
+  } catch (err) {
+    console.error('Lỗi khi mở modal ảnh:', err)
+  }
+}
+
+function closeImageModal() {
+  try {
+    showImageModal.value = false
+    modalImageUrl.value = ''
+    console.log('Đã đóng modal ảnh')
+  } catch (err) {
+    console.error('Lỗi khi đóng modal ảnh:', err)
   }
 }
 </script>
@@ -424,6 +469,42 @@ h1 {
 }
 .product-list {
   animation: fadeInUp 0.7s;
+}
+.favorite-row {
+  margin-bottom: 10px;
+}
+.favorite-checkbox {
+  display: flex;
+  align-items: center;
+  font-weight: 500;
+  font-size: 1.05rem;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+.favorite-checkbox input[type="checkbox"] {
+  accent-color: #ffd600;
+  width: 18px;
+  height: 18px;
+  margin-right: 4px;
+}
+.favorite-checkbox .star {
+  color: #ffd600;
+  font-size: 1.3em;
+  margin-right: 2px;
+}
+.star-badge {
+  color: #ffd600;
+  font-size: 1.2em;
+  margin-left: 4px;
+  vertical-align: middle;
+  filter: drop-shadow(0 1px 2px #fff59d);
+  animation: star-pop 0.5s;
+}
+@keyframes star-pop {
+  0% { transform: scale(0.7) rotate(-10deg);}
+  60% { transform: scale(1.2) rotate(10deg);}
+  100% { transform: scale(1) rotate(0);}
 }
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(30px); }

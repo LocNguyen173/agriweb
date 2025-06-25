@@ -25,27 +25,16 @@ const createAndSaveProduct = async (productData, done) => {
       productId: productData.productId || "prod123",
       name: productData.name || "New Product",
       description: productData.description || "This is a description of my first product.",
-      price: productData.price || 100,
+      price: productData.price || 100000,
       image: imageUrl,
       category: productData.category,
+      isFavorite: productData.isFavorite || false, // Mặc định là false
       created_at: new Date(),
       updated_at: new Date()
     });
 
     const data = await product.save();
     console.log("Product saved:", data);
-    done(null, data);
-  } catch (err) {
-    console.error(err);
-    done(err);
-  }
-};
-
-const createManyProducts = async (arrayOfProducts, done) => {
-  try {
-    // Each product in array must have category field (ObjectId)
-    const data = await Product.create(arrayOfProducts);
-    console.log("Many Products saved:", data);
     done(null, data);
   } catch (err) {
     console.error(err);
@@ -134,6 +123,7 @@ const findProductAndEdit = async (productId, updateData, done) => {
     if (updateData.price) product.price = updateData.price;
     if (imageUrl) product.image = imageUrl;
     if (updateData.category) product.category = updateData.category;
+    if (updateData.isFavorite) product.isFavorite = updateData.isFavorite;
     product.updated_at = new Date();
 
     const data = await product.save();
@@ -217,7 +207,6 @@ const findProductsByCategory = async (categoryId, done) => {
 
 module.exports = {
   createAndSaveProduct,
-  createManyProducts,
   findProductsByDate,
   findOneByName,
   findProductById,

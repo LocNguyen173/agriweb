@@ -13,17 +13,11 @@
     <section class="featured-products">
       <div class="container">
         <SectionTitle
-          title="Sản Phẩm Nổi Bật"
+          title="Sản Phẩm Mới Nhất"
           subtitle="SẢN PHẨM CHẤT LƯỢNG"
           description="Chúng tôi cung cấp các sản phẩm nông nghiệp chất lượng cao, được chứng nhận và thân thiện với môi trường."
         />
-        
-        <ProductGrid 
-          :products="featuredProducts"
-          @view-product="handleViewProduct"
-          @add-to-wishlist="handleAddToWishlist"
-          @add-to-cart="handleAddToCart"
-        />
+        <ProductSlider :products="featuredProducts" :itemsPerPage="featuredPerPage" />
       </div>
     </section>
 
@@ -105,8 +99,10 @@
 import Hero from '@/components/Hero.vue'
 import SectionTitle from '@/components/SectionTitle.vue'
 import CallToAction from '@/components/CallToAction.vue'
-import ProductGrid from '@/components/products/ProductGrid.vue'
+import ProductSlider from '@/components/products/ProductSlider.vue'
 import CategoryGrid from '@/components/products/CategoryGrid.vue'
+import productApi from '@/shared/api/productApi'
+// import productCategoryApi from '@/shared/api/productCategoryApi'
 
 export default {
   name: 'ProductsPage',
@@ -114,49 +110,13 @@ export default {
     Hero,
     SectionTitle,
     CallToAction,
-    ProductGrid,
+    ProductSlider,
     CategoryGrid
   },
   data() {
     return {
-      featuredProducts: [
-        {
-          name: 'MK54',
-          category: 'Thuốc trừ sâu',
-          price: '250.000₫',
-          rating: 5,
-          reviewCount: 18,
-          image: require('@/assets/images/products/product1.jpg'),
-          discount: 15
-        },
-        {
-          name: 'MK-BEAMUSA',
-          category: 'Thuốc trừ bệnh',
-          price: '180.000₫',
-          oldPrice: '200.000₫',
-          rating: 4,
-          reviewCount: 12,
-          image: require('@/assets/images/products/product2.jpg')
-        },
-        {
-          name: 'VUA SÂU LÔNG',
-          category: 'Thuốc trừ sâu',
-          price: '320.000₫',
-          rating: 4,
-          reviewCount: 7,
-          image: require('@/assets/images/products/product3.jpg')
-        },
-        {
-          name: 'CỎ XETANK',
-          category: 'Thuốc diệt cỏ',
-          price: '450.000₫',
-          oldPrice: '520.000₫',
-          rating: 5,
-          reviewCount: 15,
-          image: require('@/assets/images/products/product4.jpg'),
-          discount: 10
-        }
-      ],
+      featuredProducts: [],
+      featuredPerPage: 4,
       productCategories: [
         {
           name: 'Hạt giống',
@@ -236,27 +196,25 @@ export default {
     }
   },
   methods: {
-    handleViewProduct(product) {
-      console.log('View product:', product.name)
-      // Trong thực tế, bạn có thể chuyển hướng đến trang chi tiết sản phẩm
-      // this.$router.push(`/products/${product.id}`)
-    },
-    handleAddToWishlist(product) {
-      console.log('Add to wishlist:', product.name)
-      // Trong thực tế, bạn sẽ thêm sản phẩm vào danh sách yêu thích
-    },
-    handleAddToCart(product) {
-      console.log('Add to cart:', product.name)
-      // Trong thực tế, bạn sẽ thêm sản phẩm vào giỏ hàng
-    },
-    handleQuickAddToCart(product) {
-      console.log('Quick add to cart:', product.name)
-      // Trong thực tế, bạn sẽ thêm sản phẩm vào giỏ hàng
+    formatPrice(price) {
+      if (typeof price === 'number') {
+        return price.toLocaleString('vi-VN') + '₫'
+      }
+      return price
     },
     navigateToCategory(categoryId) {
       console.log('Navigate to category:', categoryId)
       // Trong thực tế, bạn có thể chuyển hướng đến trang danh mục sản phẩm
       // this.$router.push(`/products/category/${categoryId}`)
+    }
+  },
+  async created() {
+    // Lấy sản phẩm mới nhất từ backend
+    try {
+      const products = await productApi.getAllProducts({ params: { sort: '-created_at' } })
+      this.featuredProducts = products.slice(0, 6) // lấy tối đa 8 sản phẩm mới nhất
+    } catch (e) {
+      this.featuredProducts = []
     }
   }
 }
@@ -266,7 +224,7 @@ export default {
 .container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 15px;
+  padding: 0 5px;
 }
 
 /* Featured Products Section */
@@ -455,6 +413,18 @@ export default {
   }
 }
 
+@media (max-width: 992px) {
+  .slider-list {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 576px) {
+  .slider-list {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 768px) {
   .featured-products,
   .product-categories,
@@ -467,4 +437,4 @@ export default {
     gap: 30px;
   }
 }
-</style> 
+</style>

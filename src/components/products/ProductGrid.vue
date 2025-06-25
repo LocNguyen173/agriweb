@@ -6,14 +6,7 @@
       :name="product.name"
       :category="product.category"
       :price="product.price"
-      :oldPrice="product.oldPrice"
-      :rating="product.rating"
-      :reviewCount="product.reviewCount"
       :image="product.image"
-      :discount="product.discount"
-      @view-product="onViewProduct(product)"
-      @add-to-wishlist="onAddToWishlist(product)"
-      @add-to-cart="onAddToCart(product)"
     />
   </div>
 </template>
@@ -23,25 +16,9 @@ import ProductCard from './ProductCard.vue'
 
 export default {
   name: 'ProductGrid',
-  components: {
-    ProductCard
-  },
+  components: { ProductCard },
   props: {
-    products: {
-      type: Array,
-      required: true
-    }
-  },
-  methods: {
-    onViewProduct(product) {
-      this.$emit('view-product', product)
-    },
-    onAddToWishlist(product) {
-      this.$emit('add-to-wishlist', product)
-    },
-    onAddToCart(product) {
-      this.$emit('add-to-cart', product)
-    }
+    products: { type: Array, required: true }
   }
 }
 </script>
@@ -71,4 +48,4 @@ export default {
     grid-template-columns: 1fr;
   }
 }
-</style> 
+</style>

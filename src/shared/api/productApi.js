@@ -77,21 +77,6 @@ const productApi = {
   },
 
   /**
-   * Create multiple products
-   * @param {Array} productsArray - Array of product objects
-   * @returns {Promise} Promise object with created products data
-   */
-  createManyProducts: async (productsArray) => {
-    try {
-      const response = await axiosInstance.post('/api/products/many', productsArray);
-      return response.data;
-    } catch (error) {
-      console.error('Error creating multiple products:', error);
-      throw error;
-    }
-  },
-
-  /**
    * Update an existing product
    * @param {string} id - The product ID
    * @param {Object} productData - The updated product data

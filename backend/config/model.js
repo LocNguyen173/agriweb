@@ -31,6 +31,7 @@ const productSchema = new mongoose.Schema({
     price: { type: Number, required: true },
     image: { type: String },
     category: { type: mongoose.Schema.Types.ObjectId, ref: 'Category', required: true }, // liên kết danh mục
+    isFavorite: { type: Boolean, default: false }, // đánh dấu sản phẩm yêu thích
     created_at: { type: Date, default: Date.now },
     updated_at: { type: Date, default: Date.now },
 });
