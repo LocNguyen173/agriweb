@@ -21,6 +21,7 @@
           :category="product.category?.name || ''"
           :price="formatPrice(product.price)"
           :image="product.image"
+          :description="product.description"
         />
       </transition-group>
     </div>

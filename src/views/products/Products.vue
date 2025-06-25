@@ -30,10 +30,18 @@
           description="Tìm hiểu về các danh mục sản phẩm đa dạng của chúng tôi, phục vụ mọi nhu cầu nông nghiệp của bạn."
         />
         
-        <CategoryGrid 
-          :categories="productCategories"
-          @navigate="navigateToCategory"
-        />
+        <div v-if="isLoadingCategories" class="loading-indicator">
+          <p>Đang tải danh mục sản phẩm...</p>
+        </div>
+        <div v-else-if="productCategories.length === 0" class="no-products">
+          <p>Không có danh mục sản phẩm nào.</p>
+        </div>
+        <div v-else>
+          <CategoryGrid 
+            :categories="productCategories"
+            @navigate="navigateToCategory"
+          />
+        </div>
       </div>
     </section>
 
@@ -46,21 +54,17 @@
           description="Những sản phẩm được người dùng tin tưởng và lựa chọn nhiều nhất."
         />
         
-        <div class="bestseller-slider">
-          <div v-for="(product, index) in bestSellingProducts" :key="index" class="bestseller-item">
-            <div class="bestseller-image">
-              <img :src="product.image" :alt="product.name">
-              <div class="bestseller-badge">Bán chạy</div>
-            </div>
-            <div class="bestseller-info">
-              <h3>{{ product.name }}</h3>
-              <div class="bestseller-price">
-                <span class="current-price">{{ product.price }}</span>
-                <span v-if="product.oldPrice" class="old-price">{{ product.oldPrice }}</span>
-              </div>
-              <button class="add-to-cart-btn" @click="handleQuickAddToCart(product)">Thêm vào giỏ hàng</button>
-            </div>
-          </div>
+        <div v-if="isLoading" class="loading-indicator">
+          <p>Đang tải sản phẩm...</p>
+        </div>
+        <div v-else-if="bestSellingProducts.length === 0" class="no-products">
+          <p>Không có sản phẩm bán chạy.</p>
+        </div>
+        <div v-else>
+          <ProductSlider 
+            :products="bestSellingProducts" 
+            :itemsPerPage="bestSellingPerPage" 
+          />
         </div>
       </div>
     </section>
@@ -102,7 +106,7 @@ import CallToAction from '@/components/CallToAction.vue'
 import ProductSlider from '@/components/products/ProductSlider.vue'
 import CategoryGrid from '@/components/products/CategoryGrid.vue'
 import productApi from '@/shared/api/productApi'
-// import productCategoryApi from '@/shared/api/productCategoryApi'
+import productCategoryApi from '@/shared/api/productCategoryApi'
 
 export default {
   name: 'ProductsPage',
@@ -117,65 +121,16 @@ export default {
     return {
       featuredProducts: [],
       featuredPerPage: 4,
-      productCategories: [
-        {
-          name: 'Hạt giống',
-          description: 'Hạt giống chất lượng cao, đảm bảo năng suất và chất lượng',
-          icon: require('@/assets/images/icons/plant.png')
-        },
-        {
-          name: 'Phân bón',
-          description: 'Phân bón hữu cơ và vô cơ chất lượng cao',
-          icon: require('@/assets/images/icons/harvest.png')
-        },
-        {
-          name: 'Thuốc BVTV',
-          description: 'Thuốc bảo vệ thực vật an toàn và hiệu quả',
-          icon: require('@/assets/images/icons/insect.png')
-        },
-        {
-          name: 'Dụng cụ nông nghiệp',
-          description: 'Dụng cụ và thiết bị nông nghiệp chất lượng cao',
-          icon: require('@/assets/images/icons/tractor.png')
-        }
-      ],
-      bestSellingProducts: [ 
-        {
-          name: 'SIÊU TO CỦ',
-          price: '45.000₫',
-          oldPrice: '60.000₫',
-          image: require('@/assets/images/products/product5.jpg')
-        },
-        {
-          name: 'CYRUS 250EC',
-          price: '120.000₫',
-          oldPrice: '150.000₫',
-          image: require('@/assets/images/products/product9.jpg')
-        },
-        {
-          name: 'PHÂN BÓN HỮU CƠ WADA',
-          price: '85.000₫',
-          oldPrice: null,
-          image: require('@/assets/images/products/product6.jpg')
-        },
-        {
-          name: 'KASU NHẬT',
-          price: '220.000₫',
-          oldPrice: '280.000₫',
-          image: require('@/assets/images/products/product7.jpg')
-        },
-        {
-          name: 'MISTOP EXTRA 390',
-          price: '350.000₫',
-          oldPrice: null,
-          image: require('@/assets/images/products/product8.jpg')
-        }
-      ],
+      bestSellingProducts: [],
+      bestSellingPerPage: 5,
+      isLoading: false,
+      isLoadingCategories: false,
+      productCategories: [],  // Thay đổi từ mảng dữ liệu cứng sang mảng rỗng
       productBenefits: [
         {
-          title: 'Miễn phí vận chuyển',
-          description: 'Miễn phí vận chuyển cho đơn hàng trên 500.000₫',
-          icon: 'fas fa-truck'
+          title: 'Giao nhận linh hoạt',
+          description: 'Giao nhận sản phẩm tại cửa hàng hoặc theo thỏa thuận với khách hàng',
+          icon: 'fas fa-handshake'
         },
         {
           title: 'Hỗ trợ 24/7',
@@ -183,14 +138,14 @@ export default {
           icon: 'fas fa-headset'
         },
         {
-          title: 'Đổi trả dễ dàng',
-          description: 'Chính sách đổi trả trong vòng 15 ngày',
-          icon: 'fas fa-sync-alt'
+          title: 'Cam kết chất lượng',
+          description: 'Sản phẩm được kiểm định và đảm bảo nguồn gốc rõ ràng',
+          icon: 'fas fa-certificate'
         },
         {
-          title: 'Thanh toán an toàn',
-          description: 'Nhiều phương thức thanh toán an toàn và bảo mật',
-          icon: 'fas fa-shield-alt'
+          title: 'Tư vấn miễn phí',
+          description: 'Hỗ trợ tư vấn kỹ thuật và lựa chọn sản phẩm phù hợp',
+          icon: 'fas fa-comments'
         }
       ]
     }
@@ -205,22 +160,98 @@ export default {
     navigateToCategory(categoryId) {
       console.log('Navigate to category:', categoryId)
       // Trong thực tế, bạn có thể chuyển hướng đến trang danh mục sản phẩm
-      // this.$router.push(`/products/category/${categoryId}`)
+      this.$router.push(`/products/category/${categoryId}`)
+    },
+    handleQuickAddToCart(product) {
+      // Xử lý thêm sản phẩm vào giỏ hàng
+      console.log('Adding to cart:', product)
+      // Hiển thị thông báo hoặc cập nhật số lượng giỏ hàng
+    },
+    async fetchFavoriteProducts() {
+      try {
+        this.isLoading = true
+        const response = await productApi.getAllProducts({ isFavorite: true });
+        if (response && response.length > 0) {
+          // Đảm bảo mỗi sản phẩm đều có badge "Bán chạy"
+          this.bestSellingProducts = response.map(product => ({
+            ...product,
+            isFavorite: true // Đảm bảo đã đánh dấu là bán chạy
+          }));
+        } else {
+          this.bestSellingProducts = [];
+        }
+      } catch (error) {
+        console.error('Failed to fetch favorite products:', error)
+        this.bestSellingProducts = []
+      } finally {
+        this.isLoading = false
+      }
+    },
+    async fetchCategories() {
+      try {
+        this.isLoadingCategories = true
+        const categories = await productCategoryApi.getAllCategories()
+        
+        // Mảng các icon đa dạng cho danh mục
+        const categoryIcons = [
+          require('@/assets/images/icons/plant.png'),
+          require('@/assets/images/icons/harvest.png'),
+          require('@/assets/images/icons/water.png'),
+          require('@/assets/images/icons/tractor.png'),
+        ]
+        
+        // Gán icon thủ công theo index
+        this.productCategories = categories.map((category, index) => {
+          // Chọn icon theo thứ tự hoặc lặp lại nếu hết icon
+          const iconIndex = index % categoryIcons.length
+          
+          return {
+            _id: category._id,
+            name: category.name,
+            description: category.description || 'Sản phẩm chất lượng cao từ AgriWeb',
+            icon: categoryIcons[iconIndex]
+          }
+        })
+      } catch (error) {
+        console.error('Failed to fetch categories:', error)
+        // Dữ liệu fallback nếu có lỗi
+        this.productCategories = [
+          {
+            name: 'Hạt giống',
+            description: 'Hạt giống chất lượng cao, đảm bảo năng suất và chất lượng',
+            icon: require('@/assets/images/icons/plant.png')
+          },
+          {
+            name: 'Phân bón',
+            description: 'Phân bón hữu cơ và vô cơ chất lượng cao',
+            icon: require('@/assets/images/icons/harvest.png')
+          }
+        ]
+      } finally {
+        this.isLoadingCategories = false
+      }
     }
   },
   async created() {
     // Lấy sản phẩm mới nhất từ backend
     try {
-      const products = await productApi.getAllProducts({ params: { sort: '-created_at' } })
-      this.featuredProducts = products.slice(0, 6) // lấy tối đa 8 sản phẩm mới nhất
+      const products = await productApi.getAllProducts({ params: { sort: 'created_at' } })
+      this.featuredProducts = products.slice(-6).reverse()
     } catch (e) {
       this.featuredProducts = []
     }
+    
+    // Lấy sản phẩm bán chạy (isFavorite = true)
+    await this.fetchFavoriteProducts()
+    
+    // Lấy danh mục sản phẩm từ backend
+    await this.fetchCategories()
   }
 }
 </script>
 
 <style scoped>
+/* Giữ lại phần này */
 .container {
   max-width: 1200px;
   margin: 0 auto;
@@ -239,121 +270,21 @@ export default {
   background-color: #fff;
 }
 
+.product-categories .container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Đảm bảo CategoryGrid sẽ chiếm toàn bộ chiều rộng có sẵn */
+.product-categories .container > div:not(.loading-indicator):not(.no-products) {
+  width: 100%;
+}
+
 /* Best Selling Products */
 .best-selling {
   padding: 80px 0;
   background-color: #f8f9fa;
-}
-
-.bestseller-slider {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 20px;
-  margin-top: 50px;
-  overflow-x: auto;
-  padding-bottom: 20px;
-  scrollbar-width: thin;
-  scrollbar-color: #8CC63F #f0f0f0;
-}
-
-.bestseller-slider::-webkit-scrollbar {
-  height: 8px;
-}
-
-.bestseller-slider::-webkit-scrollbar-track {
-  background: #f0f0f0;
-  border-radius: 4px;
-}
-
-.bestseller-slider::-webkit-scrollbar-thumb {
-  background-color: #8CC63F;
-  border-radius: 4px;
-}
-
-.bestseller-item {
-  background-color: white;
-  border-radius: 10px;
-  overflow: hidden;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-  transition: transform 0.3s ease;
-}
-
-.bestseller-item:hover {
-  transform: translateY(-10px);
-}
-
-.bestseller-image {
-  position: relative;
-  height: 200px;
-}
-
-.bestseller-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.bestseller-badge {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  background-color: #8CC63F;
-  color: white;
-  padding: 5px 10px;
-  border-radius: 3px;
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.bestseller-info {
-  padding: 20px;
-}
-
-.bestseller-info h3 {
-  color: #2F5435;
-  font-size: 16px;
-  margin-bottom: 10px;
-  font-weight: 600;
-  transition: color 0.3s ease;
-}
-
-.bestseller-item:hover h3 {
-  color: #8CC63F;
-}
-
-.bestseller-price {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 15px;
-}
-
-.current-price {
-  color: #2F5435;
-  font-size: 18px;
-  font-weight: 700;
-}
-
-.old-price {
-  color: #999;
-  font-size: 14px;
-  text-decoration: line-through;
-}
-
-.add-to-cart-btn {
-  width: 100%;
-  background-color: #2F5435;
-  color: white;
-  border: none;
-  padding: 10px;
-  border-radius: 5px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.add-to-cart-btn:hover {
-  background-color: #8CC63F;
 }
 
 /* Product Benefits */
@@ -436,5 +367,22 @@ export default {
     grid-template-columns: 1fr;
     gap: 30px;
   }
+}
+
+/* Thêm loading indicator */
+.loading-indicator, .no-products {
+  text-align: center;
+  padding: 30px 0;
+  width: 100%;
+  font-size: 18px;
+  color: #666;
+}
+
+.loading-indicator p, .no-products p {
+  background-color: white;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+  display: inline-block;
 }
 </style>

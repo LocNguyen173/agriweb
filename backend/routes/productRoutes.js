@@ -36,7 +36,17 @@ router.get('/name/:name', (req, res) => {
 
 router.get('/all', (req, res) => {
   const { Product } = require('../config/model');
-  Product.find({})
+  
+  // Tạo query dựa trên req.query
+  let query = {};
+  
+  // Nếu có tham số isFavorite
+  if (req.query.isFavorite !== undefined) {
+    // Chuyển string 'true'/'false' thành boolean
+    query.isFavorite = req.query.isFavorite === 'true';
+  }
+  
+  Product.find(query)
     .populate('category')
     .then(data => res.json(data))
     .catch(err => res.status(500).json({ error: err.message }));

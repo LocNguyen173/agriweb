@@ -2,6 +2,9 @@
   <div class="product-card">
     <div class="product-image">
       <img :src="image" :alt="name">
+      <div class="product-overlay">
+        <div class="product-description">{{ description }}</div>
+      </div>
     </div>
     <div class="product-info">
       <div class="product-category">{{ category }}</div>
@@ -30,6 +33,10 @@ export default {
     image: {
       type: String,
       required: true
+    },
+    description: {
+      type: String,
+      default: 'Sản phẩm nông nghiệp chất lượng cao, thân thiện với môi trường.'
     }
   }
 }
@@ -45,6 +52,7 @@ export default {
   height: 100%;
   display: flex;
   flex-direction: column;
+  position: relative;
 }
 
 .product-card:hover {
@@ -67,6 +75,59 @@ export default {
 
 .product-card:hover .product-image img {
   transform: scale(1.1);
+}
+
+/* Overlay styles */
+.product-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(47, 84, 53, 0.9);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+
+.product-card:hover .product-overlay {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.product-description {
+  color: #fff;
+  font-size: 15px;
+  line-height: 1.6;
+  text-align: center;
+  padding: 20px;
+  max-height: 100%;
+  overflow-y: auto;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.3);
+  font-weight: 400;
+  scrollbar-width: thin;
+  scrollbar-color: #8CC63F rgba(255, 255, 255, 0.2);
+}
+
+.product-description::-webkit-scrollbar {
+  width: 5px;
+}
+
+.product-description::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.product-description::-webkit-scrollbar-thumb {
+  background-color: #8CC63F;
+  border-radius: 3px;
 }
 
 .product-info {
@@ -105,17 +166,10 @@ export default {
   align-items: center;
   justify-content: center;
   margin-bottom: 10px;
-
   color: #2F5435;
   font-size: 18px;
   font-weight: 700;
 }
-
-/* .old-price {
-  color: #999;
-  font-size: 14px;
-  text-decoration: line-through;
-} */
 
 @media (max-width: 768px) {
   .product-image {
@@ -128,6 +182,11 @@ export default {
   
   .product-price {
     font-size: 16px;
+  }
+  
+  .product-description {
+    font-size: 14px;
+    padding: 15px;
   }
 }
 </style>

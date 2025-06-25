@@ -8,7 +8,9 @@ const productApi = {
    */
   getAllProducts: async (queryParams = {}) => {
     try {
-      const response = await axiosInstance.get('/api/products/all', queryParams);
+      // Fix: đảm bảo queryParams được truyền đúng dạng
+      const config = queryParams.params ? queryParams : { params: queryParams };
+      const response = await axiosInstance.get('/api/products/all', config);
       return response.data;
     } catch (error) {
       console.error('Error fetching products:', error);
