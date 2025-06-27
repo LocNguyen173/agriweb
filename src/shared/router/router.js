@@ -4,6 +4,7 @@ import BlogPage from '@/views/blogs/Blogs.vue'
 import ContactPage from '@/views/contact/Contact.vue'
 import Login from '@/views/login/Login.vue'
 import AdminLayout from '@/components/admin/AdminLayout.vue'
+import ProductCategoryDetails from '@/views/products/ProductCategoryDetails.vue'
 
 const routes = [
   {
@@ -20,6 +21,11 @@ const routes = [
     path: '/products',
     name: 'Products',
     component: () => import('@/views/products/Products.vue')
+  },
+  {
+    path: '/products/category/:id',
+    name: 'ProductCategoryDetails',
+    component: ProductCategoryDetails
   },
   {
     path: '/blogs',

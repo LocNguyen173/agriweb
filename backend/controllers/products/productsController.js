@@ -173,15 +173,31 @@ const removeManyProducts = async (data, done) => {
 
 const queryChainProduct = async (data, done) => {
   try {
-    if (!data || !data.price) {
-      data = { price: 200 }; // Default value if not provided
+    let query = {};
+    
+    // Nếu có categoryId, filter theo category
+    if (data && data.categoryId) {
+      query.category = data.categoryId;
     }
     
-    const queryProducts = await Product.find({ price: data.price })
+    // Nếu có price, filter theo price
+    if (data && data.price) {
+      query.price = data.price;
+    }
+    
+    // Nếu có isFavorite, filter theo isFavorite
+    if (data && data.isFavorite !== undefined) {
+      query.isFavorite = data.isFavorite;
+    }
+    
+    // Nếu không có filter nào, sử dụng default
+    if (Object.keys(query).length === 0) {
+      query.price = 200; // Default value
+    }
+    
+    const queryProducts = await Product.find(query)
       .populate('category')
-      .sort({ name: 1 })
-      .limit(2)
-      .select({ description: 0, image: 0 });
+      .sort({ name: 1 });
 
     console.log("Query chain result:", queryProducts);
     done(null, queryProducts);

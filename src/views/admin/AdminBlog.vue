@@ -217,12 +217,14 @@ function handleEditorImageUpload(blobInfo, progress) {
       .then(response => {
         // Cập nhật tiến trình hoàn thành - 100%
         progress(100)
+        console.log('Editor image uploaded successfully:', response.imageUrl)
         // Trả về URL của ảnh đã upload
         resolve(response.imageUrl)
       })
       .catch(error => {
-        console.error('Lỗi upload ảnh:', error)
-        reject({ message: 'Lỗi upload ảnh', remove: true })
+        console.error('Lỗi upload ảnh chi tiết:', error)
+        console.error('Error response:', error.response?.data)
+        reject({ message: `Lỗi upload ảnh: ${error.message}`, remove: true })
       })
     }
     // Cập nhật tiến trình bắt đầu đọc file - 20%

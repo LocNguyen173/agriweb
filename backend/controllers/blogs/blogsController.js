@@ -22,12 +22,14 @@ const createAndSaveBlog = async (blogData, done) => {
     // Nếu có ảnh, lưu ảnh
     let imageUrl = null;
     if (imageBase64 && imageName) {
+      console.log("Processing image upload...", { imageName, imageMimeType: blogData.imageMimetype });
       const buffer = Buffer.from(imageBase64, 'base64');
       imageUrl = await blogImageToFirebase({ 
         originalname: imageName, 
         buffer,
         imageMimetype: blogData.imageMimetype // <-- THÊM DÒNG NÀY
       });
+      console.log("Image uploaded successfully, URL:", imageUrl);
     }
     // blogData phải chứa category (ObjectId của Category)
     const blog = new Blog({
@@ -259,14 +261,35 @@ const queryChainBlog = async (data, done) => {
 // Thêm function xử lý upload hình ảnh từ editor
 const uploadEditorImage = async (imageData, done) => {
   try {
-    const { imageBase64, imageName, imageMimetype } = imageData
+    console.log("Received editor image upload request:", { 
+      imageName: imageData.imageName, 
+      imageMimetype: imageData.imageMimetype,
+      base64Length: imageData.imageBase64?.length 
+    });
+    
+    const { imageBase64, imageName, imageMimetype } = imageData;
+    
+    // Kiểm tra dữ liệu đầu vào
+    if (!imageBase64 || !imageName || !imageMimetype) {
+      throw new Error("Missing required image data");
+    }
+    
+    // Tạo buffer từ base64
+    const buffer = Buffer.from(imageBase64, 'base64');
+    console.log("Created buffer from base64, size:", buffer.length);
     
     // Upload ảnh lên Firebase Storage sử dụng hàm đã có
-    const imageUrl = await blogImageToFirebase(imageBase64, imageName, imageMimetype)
+    const imageUrl = await blogImageToFirebase({ 
+      originalname: imageName, 
+      buffer,
+      imageMimetype: imageMimetype
+    });
     
-    done(null, { imageUrl })
+    console.log("Editor image uploaded successfully:", imageUrl);
+    done(null, { imageUrl });
   } catch (err) {
-    done(err)
+    console.error("Error uploading editor image:", err);
+    done(err);
   }
 }
 

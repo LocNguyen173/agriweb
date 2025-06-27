@@ -1,27 +1,50 @@
-import { storage } from "../../config/firebaseConfig.js";
-import multer from "multer";
+const { storage } = require("../../config/firebaseConfig.js");
+const multer = require("multer");
 
 // Hàm để tải ảnh lên Firebase Storage
 async function blogImageToFirebase(file) {
-  // Kiểm tra mimetype hợp lệ
-  const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/jpg'];
-  const mimetype = file.imageMimetype || file.mimetype || '';
-  console.log("Mimetype of uploaded file:", mimetype);
-  if (!allowedTypes.includes(mimetype)) {
-    console.error(`Invalid image type: ${mimetype}`);
-    throw new Error("Chỉ cho phép các định dạng ảnh: jpeg, png, webp, gif");
+  try {
+    console.log("Starting image upload to Firebase...", { 
+      originalname: file.originalname, 
+      bufferSize: file.buffer?.length,
+      mimetype: file.imageMimetype || file.mimetype 
+    });
+    
+    // Kiểm tra buffer
+    if (!file.buffer || file.buffer.length === 0) {
+      throw new Error("File buffer is empty or invalid");
+    }
+    
+    // Kiểm tra mimetype hợp lệ
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/jpg'];
+    const mimetype = file.imageMimetype || file.mimetype || '';
+    console.log("Mimetype of uploaded file:", mimetype);
+    if (!allowedTypes.includes(mimetype)) {
+      console.error(`Invalid image type: ${mimetype}`);
+      throw new Error("Chỉ cho phép các định dạng ảnh: jpeg, png, webp, gif");
+    }
+
+    const filename = `blogs/${Date.now()}_${file.originalname}`;
+    console.log("Generated filename:", filename);
+    const fileUpload = storage.file(filename);
+
+    await fileUpload.save(file.buffer, {
+      metadata: { contentType: mimetype },
+    });
+    console.log("File saved to Firebase Storage");
+    
+    await fileUpload.makePublic();
+    console.log("File made public");
+
+    // Lấy URL công khai trực tiếp
+    const publicUrl = `https://storage.googleapis.com/${storage.name}/${filename}`;
+    console.log("Generated public URL:", publicUrl);
+    
+    return publicUrl;
+  } catch (error) {
+    console.error("Firebase upload error:", error);
+    throw error;
   }
-
-  const filename = `blogs/${Date.now()}_${file.originalname}`;
-  const fileUpload = storage.file(filename);
-
-  await fileUpload.save(file.buffer, {
-    metadata: { contentType: mimetype },
-  });
-  await fileUpload.makePublic();
-
-  // Lấy URL công khai (nếu bucket đã public)
-  return `https://storage.googleapis.com/${storage.name}/${filename}`;
 }
 
 // Hàm xóa ảnh khỏi Firebase Storage
@@ -68,19 +91,18 @@ async function deleteBlogImageByUrl(imageUrl) {
   return deleteBlogImageFromFirebase(filename);
 }
 
-export {
+module.exports = {
   blogImageToFirebase,
   deleteBlogImageFromFirebase,
   deleteBlogImageByUrl,
+  multerMiddleware: multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+    fileFilter: (req, file, cb) => {
+      if (!file.mimetype.startsWith("image/")) {
+        return cb(new Error("Only image files are allowed!"), false);
+      }
+      cb(null, true);
+    },
+  })
 };
-
-export const multerMiddleware = multer({
-  storage: multer.memoryStorage(),
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
-  fileFilter: (req, file, cb) => {
-    if (!file.mimetype.startsWith("image/")) {
-      return cb(new Error("Only image files are allowed!"), false);
-    }
-    cb(null, true);
-  },
-});

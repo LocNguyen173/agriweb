@@ -34,6 +34,43 @@ router.get('/name/:name', (req, res) => {
   });
 });
 
+// Lấy sản phẩm theo danh mục - phải đặt trước /:id để tránh conflict
+router.get('/category/:categoryId', (req, res) => {
+  productsController.findProductsByCategory(req.params.categoryId, (err, data) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(data);
+  });
+});
+
+// Query chain - hỗ trợ filter theo categoryId, price, isFavorite
+router.post('/query', (req, res) => {
+  productsController.queryChainProduct(req.body, (err, data) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(data);
+  });
+});
+
+// Query chain - GET method với query params
+router.get('/filter', (req, res) => {
+  const queryData = {
+    categoryId: req.query.categoryId,
+    price: req.query.price ? parseInt(req.query.price) : undefined,
+    isFavorite: req.query.isFavorite === 'true' ? true : req.query.isFavorite === 'false' ? false : undefined
+  };
+  
+  // Loại bỏ các trường undefined
+  Object.keys(queryData).forEach(key => {
+    if (queryData[key] === undefined) {
+      delete queryData[key];
+    }
+  });
+  
+  productsController.queryChainProduct(queryData, (err, data) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(data);
+  });
+});
+
 router.get('/all', (req, res) => {
   const { Product } = require('../config/model');
   
@@ -91,15 +128,5 @@ router.delete('/', (req, res) => {
     res.json(data);
   });
 });
-
-// Query chain
-router.get('/', (req, res) => {
-  productsController.queryChainProduct(req.body, (err, data) => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json(data);
-  });
-});
-
-
 
 module.exports = router;

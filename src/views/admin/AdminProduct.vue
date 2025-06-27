@@ -252,9 +252,11 @@ async function deleteProduct(id) {
 
 // Sửa sản phẩm
 function editProduct(product) {
-  form.value = { ...product,
-    isFavorite: !!product.isFavorite
-   }
+  form.value = {
+    ...product,
+    isFavorite: !!product.isFavorite,
+    category: product.category?._id || product.category // Gán sẵn category vào dropdown
+  }
   isEdit.value = true
   editingId = product._id
 }

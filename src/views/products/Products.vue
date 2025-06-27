@@ -107,6 +107,7 @@ import ProductSlider from '@/components/products/ProductSlider.vue'
 import CategoryGrid from '@/components/products/CategoryGrid.vue'
 import productApi from '@/shared/api/productApi'
 import productCategoryApi from '@/shared/api/productCategoryApi'
+import { getCategoryIcon } from '@/shared/constants/categoryIcons';
 
 export default {
   name: 'ProductsPage',
@@ -158,14 +159,7 @@ export default {
       return price
     },
     navigateToCategory(categoryId) {
-      console.log('Navigate to category:', categoryId)
-      // Trong thực tế, bạn có thể chuyển hướng đến trang danh mục sản phẩm
-      this.$router.push(`/products/category/${categoryId}`)
-    },
-    handleQuickAddToCart(product) {
-      // Xử lý thêm sản phẩm vào giỏ hàng
-      console.log('Adding to cart:', product)
-      // Hiển thị thông báo hoặc cập nhật số lượng giỏ hàng
+      this.$router.push(`/products/category/${categoryId}`);
     },
     async fetchFavoriteProducts() {
       try {
@@ -175,7 +169,7 @@ export default {
           // Đảm bảo mỗi sản phẩm đều có badge "Bán chạy"
           this.bestSellingProducts = response.map(product => ({
             ...product,
-            isFavorite: true // Đảm bảo đã đánh dấu là bán chạy
+            isFavorite: true 
           }));
         } else {
           this.bestSellingProducts = [];
@@ -192,26 +186,11 @@ export default {
         this.isLoadingCategories = true
         const categories = await productCategoryApi.getAllCategories()
         
-        // Mảng các icon đa dạng cho danh mục
-        const categoryIcons = [
-          require('@/assets/images/icons/plant.png'),
-          require('@/assets/images/icons/harvest.png'),
-          require('@/assets/images/icons/water.png'),
-          require('@/assets/images/icons/tractor.png'),
-        ]
-        
-        // Gán icon thủ công theo index
-        this.productCategories = categories.map((category, index) => {
-          // Chọn icon theo thứ tự hoặc lặp lại nếu hết icon
-          const iconIndex = index % categoryIcons.length
-          
-          return {
-            _id: category._id,
-            name: category.name,
-            description: category.description || 'Sản phẩm chất lượng cao từ AgriWeb',
-            icon: categoryIcons[iconIndex]
-          }
-        })
+        // Gán icon sử dụng function getCategoryIcon để đảm bảo nhất quán
+        this.productCategories = categories.map(category => ({
+          ...category,
+          icon: getCategoryIcon(category._id || category.id)
+        }))
       } catch (error) {
         console.error('Failed to fetch categories:', error)
         // Dữ liệu fallback nếu có lỗi
@@ -219,12 +198,12 @@ export default {
           {
             name: 'Hạt giống',
             description: 'Hạt giống chất lượng cao, đảm bảo năng suất và chất lượng',
-            icon: require('@/assets/images/icons/plant.png')
+            icon: require('@/assets/images/icons/agriculture/plant.png')
           },
           {
             name: 'Phân bón',
             description: 'Phân bón hữu cơ và vô cơ chất lượng cao',
-            icon: require('@/assets/images/icons/harvest.png')
+            icon: require('@/assets/images/icons/agriculture/harvest.png')
           }
         ]
       } finally {

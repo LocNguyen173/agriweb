@@ -141,11 +141,58 @@ const productApi = {
   },
 
   /**
+   * Get products by category ID
+   * @param {string} categoryId - The category ID
+   * @returns {Promise} Promise object with products data
+   */
+  getProductsByCategory: async (categoryId) => {
+    try {
+      const response = await axiosInstance.get(`/api/products/category/${categoryId}`);
+      return response.data;
+    } catch (error) {
+      console.error(`Error fetching products for category ${categoryId}:`, error);
+      throw error;
+    }
+  },
+
+  /**
+   * Query products with advanced filters
+   * @param {Object} filterData - Filter criteria {categoryId, price, isFavorite}
+   * @returns {Promise} Promise object with filtered products data
+   */
+  queryProducts: async (filterData = {}) => {
+    try {
+      const response = await axiosInstance.post('/api/products/query', filterData);
+      return response.data;
+    } catch (error) {
+      console.error('Error querying products:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Filter products with GET method
+   * @param {Object} queryParams - Query parameters {categoryId, price, isFavorite}
+   * @returns {Promise} Promise object with filtered products data
+   */
+  filterProducts: async (queryParams = {}) => {
+    try {
+      const response = await axiosInstance.get('/api/products/filter', { 
+        params: queryParams 
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error filtering products:', error);
+      throw error;
+    }
+  },
+
+  /**
    * Query products with filters
    * @param {Object} queryParams - Query parameters (price, etc.)
    * @returns {Promise} Promise object with query results
    */
-  queryProducts: async (queryParams = {}) => {
+  queryProductsLegacy: async (queryParams = {}) => {
     try {
       const response = await axiosInstance.get('/api/products', { 
         params: queryParams 

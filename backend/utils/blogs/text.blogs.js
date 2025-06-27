@@ -1,4 +1,4 @@
-import { db } from "../../config/firebaseConfig.js";
+const { db } = require("../../config/firebaseConfig.js");
 
 // Lưu văn bản blog lên Firestore
 async function saveBlogTextToFirebase(blogId, text) {
@@ -28,7 +28,7 @@ async function deleteBlogTextFromFirebase(blogId) {
   return true;
 }
 
-export {
+module.exports = {
   saveBlogTextToFirebase,
   getBlogTextFromFirebase,
   deleteBlogTextFromFirebase

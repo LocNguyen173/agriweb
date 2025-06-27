@@ -21,7 +21,8 @@ router.post('/many', (req, res) => {
 
 router.get('/content/:blogId', blogsController.getBlogContent);
 
-router.post('/blogs/upload-editor-image', (req, res) => {
+// Route để upload ảnh từ trình soạn thảo rich text
+router.post('/upload-editor-image', (req, res) => {
   blogsController.uploadEditorImage(req.body, (err, result) => {
     if (err) return res.status(500).json({ error: err.message })
     return res.status(200).json(result)
