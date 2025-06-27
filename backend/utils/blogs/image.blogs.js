@@ -1,13 +1,20 @@
 const { storage } = require("../../config/firebaseConfig.js");
 const multer = require("multer");
 
+// Helper function để lấy file extension
+function getFileExtension(filename) {
+  return filename.split('.').pop().toLowerCase();
+}
+
 // Hàm để tải ảnh lên Firebase Storage
-async function blogImageToFirebase(file) {
+async function blogImageToFirebase(file, blogId = null, imageType = 'content') {
   try {
     console.log("Starting image upload to Firebase...", { 
       originalname: file.originalname, 
       bufferSize: file.buffer?.length,
-      mimetype: file.imageMimetype || file.mimetype 
+      mimetype: file.imageMimetype || file.mimetype,
+      blogId,
+      imageType
     });
     
     // Kiểm tra buffer
@@ -24,7 +31,21 @@ async function blogImageToFirebase(file) {
       throw new Error("Chỉ cho phép các định dạng ảnh: jpeg, png, webp, gif");
     }
 
-    const filename = `blogs/${Date.now()}_${file.originalname}`;
+    // Tạo tên file theo quy tắc mới có chứa blogId và loại ảnh
+    let filename;
+    if (blogId) {
+      if (imageType === 'thumbnail') {
+        filename = `blogs/${blogId}_thumbnail_${Date.now()}.${getFileExtension(file.originalname)}`;
+      } else {
+        // Ảnh trong editor
+        const randomString = Math.random().toString(36).substr(2, 6);
+        filename = `blogs/${blogId}_editor_${Date.now()}_${randomString}.${getFileExtension(file.originalname)}`;
+      }
+    } else {
+      // Fallback cho trường hợp không có blogId
+      filename = `blogs/${Date.now()}_${file.originalname}`;
+    }
+    
     console.log("Generated filename:", filename);
     const fileUpload = storage.file(filename);
 
@@ -91,10 +112,58 @@ async function deleteBlogImageByUrl(imageUrl) {
   return deleteBlogImageFromFirebase(filename);
 }
 
+// Xóa tất cả ảnh của một blog theo blogId
+async function deleteAllBlogImages(blogId) {
+  try {
+    console.log(`Deleting all images for blog: ${blogId}`);
+    
+    // Lấy danh sách tất cả file có prefix blogs/{blogId}_
+    const [files] = await storage.getFiles({
+      prefix: `blogs/${blogId}_`
+    });
+    
+    if (files.length === 0) {
+      console.log(`No images found for blog: ${blogId}`);
+      return { deleted: 0, errors: [] };
+    }
+    
+    const deletePromises = files.map(async (file) => {
+      try {
+        await file.delete();
+        console.log(`Deleted: ${file.name}`);
+        return { success: true, filename: file.name };
+      } catch (error) {
+        console.error(`Error deleting ${file.name}:`, error);
+        return { success: false, filename: file.name, error: error.message };
+      }
+    });
+    
+    const results = await Promise.all(deletePromises);
+    const successful = results.filter(r => r.success);
+    const failed = results.filter(r => !r.success);
+    
+    console.log(`Deleted ${successful.length} images for blog ${blogId}`);
+    if (failed.length > 0) {
+      console.warn(`Failed to delete ${failed.length} images:`, failed);
+    }
+    
+    return {
+      deleted: successful.length,
+      errors: failed,
+      total: files.length
+    };
+  } catch (error) {
+    console.error(`Error deleting images for blog ${blogId}:`, error);
+    throw error;
+  }
+}
+
 module.exports = {
   blogImageToFirebase,
   deleteBlogImageFromFirebase,
   deleteBlogImageByUrl,
+  deleteAllBlogImages,
+  getFileExtension,
   multerMiddleware: multer({
     storage: multer.memoryStorage(),
     limits: { fileSize: 5 * 1024 * 1024 }, // 5MB

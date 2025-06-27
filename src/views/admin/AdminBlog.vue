@@ -132,7 +132,12 @@ const form = ref({
   image: '',
   description: '',
   content: '',
-  category: ''
+  category: '',
+  blogId: '',
+  // Dữ liệu ảnh đại diện
+  imageBase64: '',
+  imageName: '',
+  imageMimetype: ''
 })
 const isEdit = ref(false)
 let editingId = null
@@ -208,11 +213,15 @@ function handleEditorImageUpload(blobInfo, progress) {
        // Cập nhật tiến trình đọc file - 50%
       progress(50)
       
+      // Tạo blogId tạm thời nếu chưa có (dành cho blog mới)
+      const currentBlogId = form.value.blogId || Date.now().toString()
+      
       // Gọi API để upload ảnh lên Firebase Storage
       blogApi.uploadEditorImage({
         imageBase64: base64,
         imageName: blobInfo.filename(),
-        imageMimetype: blobInfo.blob().type
+        imageMimetype: blobInfo.blob().type,
+        blogId: currentBlogId // Truyền blogId để đặt tên file đúng quy tắc
       })
       .then(response => {
         // Cập nhật tiến trình hoàn thành - 100%
@@ -233,11 +242,51 @@ function handleEditorImageUpload(blobInfo, progress) {
   })
 }
 
+// Hàm xử lý upload ảnh đại diện của blog
+function handleImageUpload(event) {
+  const file = event.target.files[0]
+  if (!file) return
+
+  // Kiểm tra loại file
+  const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/jpg']
+  if (!allowedTypes.includes(file.type)) {
+    warningMessage.value = 'Định dạng ảnh không hỗ trợ. Chỉ cho phép: jpeg, png, gif, webp'
+    showWarning.value = true
+    return
+  }
+
+  // Kiểm tra kích thước file (5MB)
+  if (file.size > 5 * 1024 * 1024) {
+    warningMessage.value = 'Ảnh quá lớn. Kích thước tối đa là 5MB'
+    showWarning.value = true
+    return
+  }
+
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    const base64 = e.target.result.split(',')[1]
+    
+    // Lưu dữ liệu ảnh để gửi khi submit form
+    form.value.imageBase64 = base64
+    form.value.imageName = file.name
+    form.value.imageMimetype = file.type
+    form.value.image = e.target.result // URL data cho preview
+    
+    // Hiển thị preview
+    previewImage.value = e.target.result
+  }
+  reader.readAsDataURL(file)
+}
+
 // Cập nhật hàm createBlog để xử lý nội dung rich text
 async function createBlog() {
   try {
     const payload = { ...form.value }
-    payload.blogId = Date.now().toString()
+    
+    // Đảm bảo blogId được thiết lập
+    if (!payload.blogId) {
+      payload.blogId = Date.now().toString()
+    }
     
     // Lưu nội dung HTML vào Firestore
     const newBlog = await blogApi.createBlog(payload)
@@ -321,10 +370,11 @@ function resetForm() {
     description: '',
     content: '',
     category: '',
-    // Thêm các trường liên quan đến ảnh để reset
-    imageBase64: null,
-    imageName: null,
-    imageMimetype: null
+    blogId: '',
+    // Reset các trường liên quan đến ảnh
+    imageBase64: '',
+    imageName: '',
+    imageMimetype: ''
   }
 }
 

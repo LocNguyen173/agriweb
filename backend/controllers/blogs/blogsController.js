@@ -1,5 +1,5 @@
 const { Blog } = require('../../config/model');
-const { blogImageToFirebase, deleteBlogImageByUrl } = require('../../utils/blogs/image.blogs');
+const { blogImageToFirebase, deleteBlogImageByUrl, deleteAllBlogImages } = require('../../utils/blogs/image.blogs');
 const { saveBlogTextToFirebase, deleteBlogTextFromFirebase, getBlogTextFromFirebase } = require('../../utils/blogs/text.blogs');
 
 const { v4: uuidv4 } = require('uuid'); // Thêm dòng này ở đầu file
@@ -19,17 +19,17 @@ const createAndSaveBlog = async (blogData, done) => {
 
     const imageBase64 = blogData.imageBase64;
     const imageName = blogData.imageName;
-    // Nếu có ảnh, lưu ảnh
+    // Nếu có ảnh, lưu ảnh đại diện
     let imageUrl = null;
     if (imageBase64 && imageName) {
-      console.log("Processing image upload...", { imageName, imageMimeType: blogData.imageMimetype });
+      console.log("Processing thumbnail image upload...", { imageName, imageMimeType: blogData.imageMimetype });
       const buffer = Buffer.from(imageBase64, 'base64');
       imageUrl = await blogImageToFirebase({ 
         originalname: imageName, 
         buffer,
-        imageMimetype: blogData.imageMimetype // <-- THÊM DÒNG NÀY
-      });
-      console.log("Image uploaded successfully, URL:", imageUrl);
+        imageMimetype: blogData.imageMimetype
+      }, blogData.blogId, 'thumbnail'); // Truyền blogId và imageType
+      console.log("Thumbnail image uploaded successfully, URL:", imageUrl);
     }
     // blogData phải chứa category (ObjectId của Category)
     const blog = new Blog({
@@ -141,10 +141,10 @@ const findBlogAndEdit = async (blogId, updateData, done) => {
     const blog = await Blog.findById(blogId);
     if (!blog) return done(new Error("Blog not found"));
 
-    // Xử lý ảnh mới
+    // Xử lý ảnh đại diện mới
     let imageUrl = blog.image;
     if (updateData.imageBase64 && updateData.imageName) {
-      // Xóa ảnh cũ nếu có
+      // Xóa ảnh đại diện cũ nếu có
       if (blog.image) {
         await deleteBlogImageByUrl(blog.image);
       }
@@ -153,7 +153,7 @@ const findBlogAndEdit = async (blogId, updateData, done) => {
         originalname: updateData.imageName, 
         buffer,
         imageMimetype: updateData.imageMimetype
-      });
+      }, blogId, 'thumbnail'); // Truyền blogId và imageType
     }
 
     await deleteBlogTextFromFirebase(blogId); // Xóa văn bản cũ
@@ -210,17 +210,26 @@ const findCategoryAndUpdate = async (title, data, done) => {
 // Hàm xóa blog theo ID
 const removeBlogById = async (blogId, done) => {
   try {
-    // Thay findByIdAndRemove bằng findByIdAndDelete
-    const data = await Blog.findByIdAndDelete(blogId);
-    await deleteBlogTextFromFirebase(blogId); // Xóa văn bản blog khỏi Firestore
-
-    if (data && data.image) {
-      await deleteBlogImageByUrl(data.image); // Xóa ảnh blog khỏi Firebase nếu có
-    }
-    
-    if (!data) {
+    // Lấy thông tin blog trước khi xóa
+    const blog = await Blog.findById(blogId);
+    if (!blog) {
       return done(new Error("Blog not found"));
     }
+    
+    // Xóa văn bản blog khỏi Firestore
+    await deleteBlogTextFromFirebase(blog.blogId || blogId);
+    
+    // Xóa TẤT CẢ ảnh liên quan đến blog này (thumbnail + editor images)
+    try {
+      const deleteResult = await deleteAllBlogImages(blog.blogId || blogId);
+      console.log(`Deleted ${deleteResult.deleted} images for blog ${blog.blogId || blogId}`);
+    } catch (imageError) {
+      console.warn("Error deleting blog images:", imageError);
+      // Không ngăn cản việc xóa blog nếu có lỗi xóa ảnh
+    }
+    
+    // Xóa blog khỏi database
+    const data = await Blog.findByIdAndDelete(blogId);
     
     console.log("Blog removed:", data);
     done(null, data);
@@ -264,10 +273,11 @@ const uploadEditorImage = async (imageData, done) => {
     console.log("Received editor image upload request:", { 
       imageName: imageData.imageName, 
       imageMimetype: imageData.imageMimetype,
-      base64Length: imageData.imageBase64?.length 
+      base64Length: imageData.imageBase64?.length,
+      blogId: imageData.blogId
     });
     
-    const { imageBase64, imageName, imageMimetype } = imageData;
+    const { imageBase64, imageName, imageMimetype, blogId } = imageData;
     
     // Kiểm tra dữ liệu đầu vào
     if (!imageBase64 || !imageName || !imageMimetype) {
@@ -278,12 +288,12 @@ const uploadEditorImage = async (imageData, done) => {
     const buffer = Buffer.from(imageBase64, 'base64');
     console.log("Created buffer from base64, size:", buffer.length);
     
-    // Upload ảnh lên Firebase Storage sử dụng hàm đã có
+    // Upload ảnh lên Firebase Storage với blogId và imageType
     const imageUrl = await blogImageToFirebase({ 
       originalname: imageName, 
       buffer,
       imageMimetype: imageMimetype
-    });
+    }, blogId, 'editor'); // Truyền blogId và imageType cho ảnh editor
     
     console.log("Editor image uploaded successfully:", imageUrl);
     done(null, { imageUrl });
