@@ -6,6 +6,19 @@
       :message="warningMessage" 
       @close="showWarning = false" 
     />
+    
+    <!-- Modal xác nhận xóa -->
+    <Warning 
+      :visible="showDeleteConfirm" 
+      :message="deleteConfirmMessage" 
+      :show-ok="false"
+      @close="cancelDelete"
+    >
+      <template #footer>
+        <button @click="cancelDelete" class="modal-cancel">Hủy</button>
+        <button @click="confirmDelete" class="modal-confirm">Xóa</button>
+      </template>
+    </Warning>
 
     <!-- Form thêm/sửa sản phẩm -->
     <div class="product-form">
@@ -176,6 +189,11 @@ const showWarning = ref(false)
 const warningMessage = ref('')
 const previewImage = ref('')
 
+// State cho xác nhận xóa
+const showDeleteConfirm = ref(false)
+const deleteConfirmMessage = ref('')
+let productToDelete = null
+
 function handleImageUpload(e) {
   const file = e.target.files[0]
   if (!file) return
@@ -241,13 +259,39 @@ async function updateProduct() {
 
 // Xóa sản phẩm
 async function deleteProduct(id) {
+  // Lấy thông tin sản phẩm để hiển thị trong xác nhận
+  const product = products.value.find(p => p._id === id)
+  const productName = product ? product.name : 'sản phẩm này'
+  
+  productToDelete = id
+  deleteConfirmMessage.value = `Bạn có chắc chắn muốn xóa sản phẩm "${productName}"? Hành động này không thể hoàn tác.`
+  showDeleteConfirm.value = true
+}
+
+// Xác nhận xóa sản phẩm
+async function confirmDelete() {
   try {
-    await productApi.deleteProduct(id)
-    products.value = products.value.filter(p => p._id !== id)
-    if (isEdit.value && editingId === id) cancelEdit()
+    showDeleteConfirm.value = false
+    await productApi.deleteProduct(productToDelete)
+    products.value = products.value.filter(p => p._id !== productToDelete)
+    if (isEdit.value && editingId === productToDelete) cancelEdit()
+    
+    // Hiển thị thông báo thành công
+    warningMessage.value = 'Đã xóa sản phẩm thành công!'
+    showWarning.value = true
+    
+    productToDelete = null
   } catch (err) {
-    alert('Không thể xóa sản phẩm!')
+    console.error('Xóa sản phẩm thất bại:', err)
+    warningMessage.value = 'Xóa sản phẩm thất bại. Vui lòng thử lại.'
+    showWarning.value = true
   }
+}
+
+// Hủy xóa sản phẩm
+function cancelDelete() {
+  showDeleteConfirm.value = false
+  productToDelete = null
 }
 
 // Sửa sản phẩm
@@ -597,5 +641,39 @@ h1 {
     padding: 8px 6px;
     font-size: 0.95rem;
   }
+}
+
+/* CSS cho modal xác nhận xóa */
+.modal-cancel {
+  background: #f8f9fa;
+  color: #6c757d;
+  border: 1px solid #dee2e6;
+  padding: 8px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 8px;
+  font-size: 1rem;
+  transition: all 0.2s;
+}
+
+.modal-cancel:hover {
+  background: #e9ecef;
+  color: #495057;
+}
+
+.modal-confirm {
+  background: #dc3545;
+  color: #fff;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.2s;
+}
+
+.modal-confirm:hover {
+  background: #c82333;
+  transform: translateY(-1px);
 }
 </style>
