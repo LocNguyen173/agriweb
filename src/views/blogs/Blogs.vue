@@ -131,6 +131,7 @@
 import Hero from '@/components/Hero.vue'
 import BlogCard from '@/components/blogs/BlogCard.vue'
 import BlogDetail from '@/components/blogs/BlogDetail.vue'
+import blogApi from '@/shared/api/blogApi'
 
 export default {
   name: 'BlogPage',
@@ -144,49 +145,11 @@ export default {
       selectedCategory: 'all',
       selectedBlog: null,
       searchQuery: '',
-      blogs: [
-        {
-          id: 1,
-          title: 'Kỹ thuật trồng rau sạch tại nhà',
-          category: 'farming',
-          image: require('@/assets/images/blog1.jpg'),
-          preview: 'Học cách trồng rau sạch tại nhà với những kỹ thuật đơn giản và hiệu quả...',
-          content: 'Chi tiết về cách trồng rau sạch tại nhà với những kỹ thuật đơn giản và hiệu quả. Bài viết sẽ hướng dẫn từng bước từ việc chuẩn bị đất, chọn giống, cách trồng và chăm sóc để có được rau sạch tại nhà.',
-          date: '26/03/2025',
-          author: 'Nguyễn Văn A'
-        },
-        {
-          id: 2,
-          title: 'Ứng dụng IoT trong nông nghiệp hiện đại',
-          category: 'tech',
-          image: require('@/assets/images/blog2.jpg'),
-          preview: 'Internet of Things đang cách mạng hóa ngành nông nghiệp...',
-          content: 'Internet of Things (IoT) đang cách mạng hóa ngành nông nghiệp bằng cách cho phép nông dân theo dõi và kiểm soát từ xa nhiều khía cạnh của hoạt động nông nghiệp. Từ hệ thống tưới tiêu thông minh đến giám sát điều kiện thời tiết và sức khỏe cây trồng.',
-          date: '25/03/2025',
-          author: 'Trần Văn B'
-        },
-        {
-          id: 3,
-          title: 'Phương pháp nuôi gà thả vườn hiệu quả',
-          category: 'livestock',
-          image: require('@/assets/images/blog3.jpg'),
-          preview: 'Cách nuôi gà thả vườn mang lại hiệu quả kinh tế cao...',
-          content: 'Phương pháp nuôi gà thả vườn đang ngày càng được ưa chuộng vì tính bền vững và chất lượng thịt gà cao. Bài viết này trình bày các kỹ thuật nuôi gà thả vườn hiệu quả, từ việc chọn giống, thiết kế chuồng trại đến chế độ dinh dưỡng và phòng bệnh.',
-          date: '24/03/2025',
-          author: 'Lê Thị C'
-        },
-        {
-          id: 4,
-          title: 'Kỹ thuật trồng cây ăn quả trong chậu',
-          category: 'farming',
-          image: require('@/assets/images/blog4.jpg'),
-          preview: 'Hướng dẫn cách trồng các loại cây ăn quả trong chậu tại nhà...',
-          content: 'Trồng cây ăn quả trong chậu là giải pháp tuyệt vời cho những người sống trong không gian hạn chế như căn hộ chung cư. Bài viết này sẽ hướng dẫn bạn cách chọn loại cây phù hợp, kích thước chậu, loại đất và cách chăm sóc để cây phát triển tốt và cho quả.',
-          date: '23/03/2025',
-          author: 'Phạm Văn D'
-        }
-      ]
+      blogs: [] // Khởi tạo rỗng, sẽ fetch từ API
     }
+  },
+  mounted() {
+    this.fetchBlogs()
   },
   computed: {
     filteredAndSearchedBlogs() {
@@ -211,6 +174,19 @@ export default {
     }
   },
   methods: {
+    async fetchBlogs() {
+      try {
+        const blogs = await blogApi.getAllBlogs()
+        // Chuyển đổi dữ liệu nếu cần (ví dụ: thêm trường date nếu backend trả về created_at)
+        this.blogs = blogs.map(blog => ({
+          ...blog,
+          date: blog.created_at ? new Date(blog.created_at).toLocaleDateString('vi-VN') : '',
+        }))
+      } catch (error) {
+        // Xử lý lỗi nếu cần
+        this.blogs = []
+      }
+    },
     filterCategory(category) {
       this.selectedCategory = category;
     },

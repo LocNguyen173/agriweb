@@ -11,14 +11,15 @@
         <div class="blog-meta">
           <span class="category">{{ getCategoryName(blog.category) }}</span>
           <span class="date"><i class="fas fa-calendar"></i> {{ formatDate(blog.created_at) }}</span>
-          <span v-if="blog.author" class="author"><i class="fas fa-user"></i> {{ blog.author }}</span>
         </div>
         
         <h1>{{ blog.title }}</h1>
-        
-        <!-- Thay đổi từ hiển thị text thuần sang rich HTML content -->
+        <!-- Thêm mô tả blog dưới title -->
+        <div class="blog-description" v-if="blog.description">
+          {{ blog.description }}
+        </div>
+        <!-- Nội dung bài viết -->
         <div class="blog-content" v-html="sanitizedContent"></div>
-        
         <div class="blog-actions">
           <div class="blog-share">
             <span>Chia sẻ:</span>
@@ -181,6 +182,13 @@ export default {
   margin-bottom: 20px;
   font-size: 2rem;
   color: #333;
+}
+
+.blog-description {
+  font-size: 1.1rem;
+  color: #555;
+  margin-bottom: 20px;
+  font-style: italic;
 }
 
 .blog-content {

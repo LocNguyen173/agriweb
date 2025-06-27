@@ -7,10 +7,9 @@
     <div class="blog-content">
       <h3>{{ blog.title }}</h3>
       <p class="blog-meta">
-        <span><i class="fas fa-user"></i> {{ blog.author }}</span>
         <span><i class="fas fa-calendar"></i> {{ blog.date }}</span>
       </p>
-      <p class="blog-preview">{{ blog.preview }}</p>
+      <p class="blog-preview">{{ blog.description }}</p>
       <div class="read-more">Đọc thêm <i class="fas fa-arrow-right"></i></div>
     </div>
   </div>
@@ -27,6 +26,11 @@ export default {
   },
   methods: {
     getCategoryName(category) {
+      // Nếu category là object (populate từ backend), lấy name
+      if (category && typeof category === 'object' && category.name) {
+        return category.name
+      }
+      // Nếu là string (trường hợp cũ)
       const categories = {
         'farming': 'Canh tác',
         'livestock': 'Chăn nuôi',
