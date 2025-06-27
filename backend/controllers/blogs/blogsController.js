@@ -8,14 +8,16 @@ const { v4: uuidv4 } = require('uuid'); // Thêm dòng này ở đầu file
 // Hàm tạo blog mới, truyền thêm categoryId
 const createAndSaveBlog = async (blogData, done) => {
   try {
-    // Nếu không có blogId thì tự sinh
-    if (!blogData.blogId || typeof blogData.blogId !== 'string' || !blogData.blogId.trim()) {
-      blogData.blogId = uuidv4();
+    // Tạo blogId nhất quán - ưu tiên từ frontend, nếu không có thì tạo mới
+    let blogId = blogData.blogId;
+    if (!blogId || typeof blogId !== 'string' || !blogId.trim()) {
+      blogId = uuidv4();
     }
 
     console.log("Received category:", blogData.category);
+    console.log("Using blogId:", blogId);
 
-    const textUrl = await saveBlogTextToFirebase(blogData.blogId, blogData.content);
+    const textUrl = await saveBlogTextToFirebase(blogId, blogData.content);
 
     const imageBase64 = blogData.imageBase64;
     const imageName = blogData.imageName;
@@ -28,12 +30,12 @@ const createAndSaveBlog = async (blogData, done) => {
         originalname: imageName, 
         buffer,
         imageMimetype: blogData.imageMimetype
-      }, blogData.blogId, 'thumbnail'); // Truyền blogId và imageType
+      }, blogId, 'thumbnail'); // Sử dụng blogId nhất quán
       console.log("Thumbnail image uploaded successfully, URL:", imageUrl);
     }
     // blogData phải chứa category (ObjectId của Category)
     const blog = new Blog({
-      blogId: blogData.blogId,
+      blogId: blogId, // Lưu blogId vào database
       title: blogData.title,
       description: blogData.description,
       content: textUrl,
@@ -46,7 +48,7 @@ const createAndSaveBlog = async (blogData, done) => {
     });
 
     const data = await blog.save();
-    console.log("Blog saved:", data);
+    console.log("Blog saved with blogId:", data.blogId);
     done(null, data);
   } catch (err) {
     console.error(err);
@@ -103,8 +105,16 @@ const findBlogsByDate = async (dateString, done) => {
 
 const getBlogContent = async (req, res) => {
   try {
-    const blogId = req.params.blogId; // SỬA LẠI Ở ĐÂY
-    const text = await getBlogTextFromFirebase(blogId);
+    const mongoId = req.params.blogId; // MongoDB _id từ params
+    // Tìm blog để lấy blogId thực tế
+    const blog = await Blog.findById(mongoId);
+    if (!blog) {
+      return res.status(404).json({ error: 'Không tìm thấy bài viết' });
+    }
+    
+    // Sử dụng blogId từ database để đảm bảo tính nhất quán
+    const consistentBlogId = blog.blogId || blog._id.toString();
+    const text = await getBlogTextFromFirebase(consistentBlogId);
     res.json({ text });
   } catch (err) {
     res.status(404).json({ error: 'Không tìm thấy nội dung bài viết' });
@@ -141,6 +151,9 @@ const findBlogAndEdit = async (blogId, updateData, done) => {
     const blog = await Blog.findById(blogId);
     if (!blog) return done(new Error("Blog not found"));
 
+    // Sử dụng blogId từ database để đảm bảo tính nhất quán
+    const consistentBlogId = blog.blogId || blog._id.toString();
+
     // Xử lý ảnh đại diện mới
     let imageUrl = blog.image;
     if (updateData.imageBase64 && updateData.imageName) {
@@ -153,11 +166,11 @@ const findBlogAndEdit = async (blogId, updateData, done) => {
         originalname: updateData.imageName, 
         buffer,
         imageMimetype: updateData.imageMimetype
-      }, blogId, 'thumbnail'); // Truyền blogId và imageType
+      }, consistentBlogId, 'thumbnail'); // Sử dụng consistentBlogId
     }
 
-    await deleteBlogTextFromFirebase(blogId); // Xóa văn bản cũ
-    const textUrl = await saveBlogTextToFirebase(blogId, updateData.content);
+    await deleteBlogTextFromFirebase(consistentBlogId); // Sử dụng consistentBlogId
+    const textUrl = await saveBlogTextToFirebase(consistentBlogId, updateData.content);
 
     // Cập nhật các trường cần thiết
     if (updateData.description) blog.description = updateData.description;
@@ -216,13 +229,16 @@ const removeBlogById = async (blogId, done) => {
       return done(new Error("Blog not found"));
     }
     
+    // Sử dụng blogId nhất quán cho việc xóa
+    const consistentBlogId = blog.blogId || blog._id.toString();
+    
     // Xóa văn bản blog khỏi Firestore
-    await deleteBlogTextFromFirebase(blog.blogId || blogId);
+    await deleteBlogTextFromFirebase(consistentBlogId);
     
     // Xóa TẤT CẢ ảnh liên quan đến blog này (thumbnail + editor images)
     try {
-      const deleteResult = await deleteAllBlogImages(blog.blogId || blogId);
-      console.log(`Deleted ${deleteResult.deleted} images for blog ${blog.blogId || blogId}`);
+      const deleteResult = await deleteAllBlogImages(consistentBlogId);
+      console.log(`Deleted ${deleteResult.deleted} images for blog ${consistentBlogId}`);
     } catch (imageError) {
       console.warn("Error deleting blog images:", imageError);
       // Không ngăn cản việc xóa blog nếu có lỗi xóa ảnh

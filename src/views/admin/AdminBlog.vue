@@ -5,6 +5,20 @@
       :message="warningMessage" 
       @close="showWarning = false" 
     />
+    
+    <!-- Modal xác nhận xóa -->
+    <Warning 
+      :visible="showDeleteConfirm" 
+      :message="deleteConfirmMessage" 
+      :show-ok="false"
+      @close="cancelDelete"
+    >
+      <template #footer>
+        <button @click="cancelDelete" class="modal-cancel">Hủy</button>
+        <button @click="confirmDelete" class="modal-confirm">Xóa</button>
+      </template>
+    </Warning>
+    
     <h1>Quản lý bài viết</h1>
     
     <!-- Form thêm/sửa bài viết -->
@@ -126,6 +140,15 @@ import blogCategoryApi from '@/shared/api/blogCategoryApi'
 import Warning from '@/components/modal/Warning.vue'
 import Editor from '@tinymce/tinymce-vue'
 
+// Hàm tạo UUID đơn giản
+function generateUUID() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0
+    const v = c === 'x' ? r : (r & 0x3 | 0x8)
+    return v.toString(16)
+  })
+}
+
 // State cho form và chế độ sửa
 const form = ref({
   title: '',
@@ -152,6 +175,11 @@ const previewImage = ref(null)
 // State cho cảnh báo
 const showWarning = ref(false)
 const warningMessage = ref('')
+
+// State cho xác nhận xóa
+const showDeleteConfirm = ref(false)
+const deleteConfirmMessage = ref('')
+let blogToDelete = null
 
 const tinymceApiKey = process.env.VUE_APP_TINYMCE_API_KEY
 
@@ -214,7 +242,7 @@ function handleEditorImageUpload(blobInfo, progress) {
       progress(50)
       
       // Tạo blogId tạm thời nếu chưa có (dành cho blog mới)
-      const currentBlogId = form.value.blogId || Date.now().toString()
+      const currentBlogId = form.value.blogId || generateUUID()
       
       // Gọi API để upload ảnh lên Firebase Storage
       blogApi.uploadEditorImage({
@@ -283,9 +311,9 @@ async function createBlog() {
   try {
     const payload = { ...form.value }
     
-    // Đảm bảo blogId được thiết lập
+    // Tạo UUID cho blogId thay vì timestamp để đảm bảo tính duy nhất
     if (!payload.blogId) {
-      payload.blogId = Date.now().toString()
+      payload.blogId = generateUUID()
     }
     
     // Lưu nội dung HTML vào Firestore
@@ -308,6 +336,8 @@ async function createBlog() {
 async function updateBlog() {
   try {
     const payload = { ...form.value }
+    // Đảm bảo blogId không bị thay đổi khi cập nhật
+    // blogId đã được đặt từ editBlog()
     await blogApi.updateBlog(editingId, payload)
     await fetchBlogs() // Refresh danh sách sau khi cập nhật thành công
     resetForm()
@@ -323,22 +353,58 @@ async function updateBlog() {
 
 // Xóa bài viết
 async function deleteBlog(id) {
+  // Lấy thông tin blog để hiển thị trong xác nhận
+  const blog = blogs.value.find(b => b._id === id)
+  const blogTitle = blog ? blog.title : 'bài viết này'
+  
+  blogToDelete = id
+  deleteConfirmMessage.value = `Bạn có chắc chắn muốn xóa bài viết "${blogTitle}"? Hành động này không thể hoàn tác.`
+  showDeleteConfirm.value = true
+}
+
+// Xác nhận xóa bài viết
+async function confirmDelete() {
   try {
-    await blogApi.deleteBlog(id)
+    showDeleteConfirm.value = false
+    await blogApi.deleteBlog(blogToDelete)
     await fetchBlogs()
-    if (isEdit.value && editingId === id) {
+    if (isEdit.value && editingId === blogToDelete) {
       cancelEdit()
     }
+    
+    // Hiển thị thông báo thành công
+    warningMessage.value = 'Đã xóa bài viết thành công!'
+    showWarning.value = true
+    
+    blogToDelete = null
   } catch (err) {
     console.error('Xóa bài viết thất bại:', err)
+    warningMessage.value = 'Xóa bài viết thất bại. Vui lòng thử lại.'
+    showWarning.value = true
   }
+}
+
+// Hủy xóa bài viết
+function cancelDelete() {
+  showDeleteConfirm.value = false
+  blogToDelete = null
 }
 
 // Đổ dữ liệu vào form để sửa
 async function editBlog(blog) {
-  form.value = { ...blog }
-  isEdit.value = true
-  editingId = blog._id
+  form.value = { ...blog };
+  // Đảm bảo form.category luôn là _id
+  if (blog.category && typeof blog.category === 'object' && blog.category._id) {
+    form.value.category = blog.category._id;
+  } else {
+    form.value.category = blog.category || '';
+  }
+  
+  // Đảm bảo blogId được giữ nguyên từ database
+  form.value.blogId = blog.blogId || blog._id;
+  
+  isEdit.value = true;
+  editingId = blog._id;
   previewImage.value = blog.image || null
 
   // Nếu content là URL Firestore thì fetch nội dung thực
@@ -664,5 +730,39 @@ h1 {
 }
 :deep(.tox-statusbar__path) {
   color: #666;
+}
+
+/* CSS cho modal xác nhận xóa */
+.modal-cancel {
+  background: #f8f9fa;
+  color: #6c757d;
+  border: 1px solid #dee2e6;
+  padding: 8px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 8px;
+  font-size: 1rem;
+  transition: all 0.2s;
+}
+
+.modal-cancel:hover {
+  background: #e9ecef;
+  color: #495057;
+}
+
+.modal-confirm {
+  background: #dc3545;
+  color: #fff;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.2s;
+}
+
+.modal-confirm:hover {
+  background: #c82333;
+  transform: translateY(-1px);
 }
 </style>

@@ -70,7 +70,9 @@ async function blogImageToFirebase(file, blogId = null, imageType = 'content') {
 
 // Hàm xóa ảnh khỏi Firebase Storage
 async function deleteBlogImageFromFirebase(filename) {
-  const fileRef = storage.file(`blogs/${filename}`);
+  // Đảm bảo filename không có prefix blogs/ trùng lặp
+  const cleanFilename = filename.startsWith('blogs/') ? filename : `blogs/${filename}`;
+  const fileRef = storage.file(cleanFilename);
   try {
     await fileRef.delete();
     return true;
@@ -81,7 +83,7 @@ async function deleteBlogImageFromFirebase(filename) {
       error.message.includes('No such object') ||
       error.message.includes('not found')
     ) {
-      console.warn(`Image not found on Firebase, skip deleting: ${filename}`);
+      console.warn(`Image not found on Firebase, skip deleting: ${cleanFilename}`);
       return false;
     }
     throw new Error("Error deleting image from Firebase: " + error.message);
@@ -92,7 +94,8 @@ async function deleteBlogImageFromFirebase(filename) {
 function getFilenameFromUrl(url) {
   const match = url.match(/\/blogs\/(.+)$/);
   if (match && match[1]) {
-    return match[1];
+    // Trả về full path bao gồm blogs/ prefix
+    return `blogs/${match[1]}`;
   }
   throw new Error("Invalid Firebase Storage URL");
 }
