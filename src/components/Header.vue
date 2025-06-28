@@ -8,12 +8,18 @@
       <!-- Desktop Menu -->
       <nav class="desktop-menu">
         <ul>
-          <li><router-link to="/" class="nav-link">TRANG CHỦ</router-link></li>
+          <li><a href="/" class="nav-link">TRANG CHỦ</a></li>
           <!-- <li><router-link to="/about" class="nav-link">GIỚI THIỆU</router-link></li> -->
-          <li><router-link to="/services" class="nav-link">DỊCH VỤ</router-link></li>
-          <li><router-link to="/products" class="nav-link">SẢN PHẨM</router-link></li>
-          <li><router-link to="/blogs" class="nav-link">BÀI VIẾT</router-link></li>
-          <li><router-link to="/contact" class="nav-link">LIÊN HỆ</router-link></li>
+          <li><a href="/services" class="nav-link">DỊCH VỤ</a></li>
+          <li><a href="/products" class="nav-link">SẢN PHẨM</a></li>
+          <li><a href="/blogs" class="nav-link">BÀI VIẾT</a></li>
+          <li><a href="/contact" class="nav-link">LIÊN HỆ</a></li>
+          <li v-if="isLoggedIn">
+            <a href="/admin" class="nav-link">QUẢN TRỊ</a>
+          </li>
+          <li v-else>
+            <a href="/login" class="nav-link">ĐĂNG NHẬP</a>
+          </li>
         </ul>
       </nav>
 
@@ -27,11 +33,17 @@
       <!-- Mobile Menu -->
       <nav class="mobile-menu" v-show="isMobileMenuOpen">
         <ul>
-          <li><router-link to="/" @click="closeMobileMenu">TRANG CHỦ</router-link></li>
-          <li><router-link to="/services" @click="closeMobileMenu">DỊCH VỤ</router-link></li>
-          <li><router-link to="/products" @click="closeMobileMenu">SẢN PHẨM</router-link></li>
-          <li><router-link to="/blogs" @click="closeMobileMenu">BÀI VIẾT</router-link></li>
-          <li><router-link to="/contact" @click="closeMobileMenu">LIÊN HỆ</router-link></li>
+          <li><a href="/" @click="closeMobileMenu">TRANG CHỦ</a></li>
+          <li><a href="/services" @click="closeMobileMenu">DỊCH VỤ</a></li>
+          <li><a href="/products" @click="closeMobileMenu">SẢN PHẨM</a></li>
+          <li><a href="/blogs" @click="closeMobileMenu">BÀI VIẾT</a></li>
+          <li><a href="/contact" @click="closeMobileMenu">LIÊN HỆ</a></li>
+          <li v-if="isLoggedIn">
+            <a href="/admin" class="nav-link" @click="closeMobileMenu">QUẢN TRỊ</a>
+          </li>
+          <li v-else>
+            <a href="/login" class="nav-link" @click="closeMobileMenu">ĐĂNG NHẬP</a>
+          </li>
         </ul>
       </nav>
     </div>
@@ -39,19 +51,28 @@
 </template>
 
 <script>
+import userApi from '@/shared/api/userApi'
+
 export default {
   name: 'AppHeader',
   data() {
     return {
       isScrolled: false,
-      isMobileMenuOpen: false
+      isMobileMenuOpen: false,
+      isLoggedIn: false
     }
   },
   mounted() {
     window.addEventListener('scroll', this.handleScroll)
+    this.checkLoginStatus()
+    // Kiểm tra trạng thái đăng nhập định kỳ mỗi 3 giây
+    this.loginCheckInterval = setInterval(this.checkLoginStatus, 3000)
   },
   beforeUnmount() {
     window.removeEventListener('scroll', this.handleScroll)
+    if (this.loginCheckInterval) {
+      clearInterval(this.loginCheckInterval)
+    }
   },
   methods: {
     handleScroll() {
@@ -62,6 +83,9 @@ export default {
     },
     closeMobileMenu() {
       this.isMobileMenuOpen = false
+    },
+    checkLoginStatus() {
+      this.isLoggedIn = userApi.isAuthenticated()
     }
   }
 }

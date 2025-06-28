@@ -71,6 +71,8 @@
 </template>
 
 <script>
+import contactApi from '@/shared/api/contactApi'
+
 export default {
   name: 'ContactForm',
   data() {
@@ -113,12 +115,14 @@ export default {
       
       this.isSubmitting = true;
       try {
-        // Giả lập API call
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        // Gửi email thông qua API
+        await contactApi.sendContactEmail(this.formData);
         this.showSuccess = true;
         this.resetForm();
       } catch (error) {
-        console.error('Lỗi:', error);
+        console.error('Lỗi gửi email:', error);
+        // Hiển thị thông báo lỗi cho người dùng
+        alert('Có lỗi xảy ra khi gửi email. Vui lòng thử lại sau.');
       } finally {
         this.isSubmitting = false;
       }
@@ -138,9 +142,9 @@ export default {
 <style scoped>
 .contact-form-container {
   background-color: #fff;
-  border-radius: 10px;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
-  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  padding: 40px;
   width: 100%;
   max-width: 100%;
   margin: 0 auto;
@@ -148,7 +152,7 @@ export default {
 }
 
 .form-header {
-  margin-bottom: 25px;
+  margin-bottom: 30px;
   text-align: center;
 }
 
@@ -159,42 +163,46 @@ export default {
 }
 
 .form-line {
-  background-color: #8bc34a;
+  background: linear-gradient(90deg, #8bc34a, #689f38);
   height: 4px;
   width: 70px;
   margin: 0 auto;
+  border-radius: 2px;
 }
 
 .form-row {
   display: flex;
-  gap: 20px;
-  margin-bottom: 15px;
+  gap: 24px;
+  margin-bottom: 20px;
 }
 
 .form-field {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
   width: 100%;
 }
 
 label {
   display: block;
-  font-weight: 500;
-  margin-bottom: 5px;
-  color: #333;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #2c4f3c;
+  font-size: 14px;
 }
 
 input, textarea {
   width: 100%;
   padding: 12px 15px;
   border: 1px solid #ddd;
-  border-radius: 5px;
+  border-radius: 8px;
   font-size: 14px;
   transition: all 0.3s;
+  box-sizing: border-box;
 }
 
 input:focus, textarea:focus {
   border-color: #8bc34a;
   outline: none;
+  box-shadow: 0 0 0 3px rgba(139, 195, 74, 0.1);
 }
 
 input.error, textarea.error {
@@ -212,20 +220,23 @@ input.error, textarea.error {
   background-color: #8bc34a;
   color: white;
   border: none;
-  padding: 12px 15px;
-  border-radius: 5px;
+  padding: 15px 20px;
+  border-radius: 8px;
   cursor: pointer;
   font-size: 16px;
-  font-weight: 500;
+  font-weight: 600;
   width: 100%;
-  transition: background-color 0.3s;
+  transition: all 0.3s ease;
   display: flex;
   justify-content: center;
   align-items: center;
+  margin-top: 10px;
 }
 
 .submit-button:hover {
   background-color: #7cb342;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(139, 195, 74, 0.3);
 }
 
 .submit-button:disabled {
@@ -282,10 +293,11 @@ input.error, textarea.error {
   }
   
   .contact-form-container {
-    padding: 20px 15px;
+    padding: 30px 20px;
     width: 100%;
     max-width: 100%;
     margin: 0 auto;
+    border-radius: 10px;
   }
   
   .form-header h3 {
@@ -293,23 +305,23 @@ input.error, textarea.error {
   }
   
   input, textarea {
-    padding: 10px 12px;
+    padding: 12px 15px;
     font-size: 14px;
   }
   
   .form-field {
-    margin-bottom: 15px;
+    margin-bottom: 20px;
   }
   
   .submit-button {
-    padding: 10px 12px;
+    padding: 12px 15px;
     font-size: 15px;
   }
 }
 
 @media (max-width: 480px) {
   .contact-form-container {
-    padding: 15px 10px;
+    padding: 25px 15px;
     border-radius: 8px;
     width: 100%;
     margin: 0 auto;
@@ -326,11 +338,16 @@ input.error, textarea.error {
   
   label {
     font-size: 14px;
+    margin-bottom: 6px;
   }
   
   input, textarea {
-    padding: 8px 10px;
+    padding: 10px 12px;
     font-size: 13px;
+  }
+  
+  .form-field {
+    margin-bottom: 18px;
   }
   
   .error-message {
@@ -347,7 +364,7 @@ input.error, textarea.error {
   }
   
   .submit-button {
-    padding: 10px;
+    padding: 12px 15px;
     font-size: 14px;
   }
 }

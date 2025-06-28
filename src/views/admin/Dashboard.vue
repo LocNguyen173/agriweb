@@ -113,7 +113,7 @@
               • {{ newestBlogs[0].category.name }}
             </span>
           </div>
-          <button class="latest-blog-btn" @click="goToBlog(newestBlogs[0]._id)">Xem chi tiết</button>
+          <button class="latest-blog-btn" @click="showBlogDetail(newestBlogs[0])">Xem chi tiết</button>
         </div>
       </div>
       <div v-else class="latest-blog-card placeholder">
@@ -124,6 +124,13 @@
         </div>
       </div>
     </div>
+
+    <!-- Blog Detail Modal -->
+    <BlogDetail 
+      v-if="selectedBlog" 
+      :blog="selectedBlog" 
+      @close="selectedBlog = null" 
+    />
   </div>
 </template>
 
@@ -133,6 +140,7 @@ import productApi from '@/shared/api/productApi'
 import blogApi from '@/shared/api/blogApi'
 import productCategoryApi from '@/shared/api/productCategoryApi'
 import blogCategoryApi from '@/shared/api/blogCategoryApi'
+import BlogDetail from '@/components/blogs/BlogDetail.vue'
 import Chart from 'chart.js/auto'
 
 const totalProducts = ref(0)
@@ -141,10 +149,10 @@ const totalProductCategories = ref(0)
 const totalBlogCategories = ref(0)
 const newestProducts = ref([])
 const newestBlogs = ref([])
+const selectedBlog = ref(null)
 
-function goToBlog(id) {
-  // Thay bằng router push nếu dùng vue-router
-  window.open(`/blog/${id}`, '_blank')
+function showBlogDetail(blog) {
+  selectedBlog.value = blog
 }
 
 function goToProduct(id) {

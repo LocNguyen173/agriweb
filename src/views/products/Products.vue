@@ -4,7 +4,7 @@
     <Hero
       title="Sản Phẩm Nông Nghiệp"
       subtitle="Các sản phẩm chất lượng cao, an toàn và thân thiện với môi trường"
-      :backgroundImage="require('@/assets/images/services-banner.jpg')"
+      :backgroundImage="require('@/assets/images/products-banner.jpg')"
       showBreadcrumb
       currentPage="Sản Phẩm"
     />
@@ -87,7 +87,7 @@
     </section>
 
     <!-- Call To Action -->
-    <CallToAction
+    <!-- <CallToAction
       title="Cần tư vấn về sản phẩm nông nghiệp?"
       description="Chuyên gia của chúng tôi sẵn sàng hỗ trợ bạn lựa chọn sản phẩm phù hợp. Hãy liên hệ ngay hôm nay."
       primaryButtonText="Liên hệ ngay"
@@ -95,14 +95,14 @@
       secondaryButtonText="Xem thêm sản phẩm"
       secondaryButtonLink="/products"
       :backgroundImage="require('@/assets/images/cta-bg.jpg')"
-    />
+    /> -->
   </div>
 </template>
 
 <script>
 import Hero from '@/components/Hero.vue'
 import SectionTitle from '@/components/SectionTitle.vue'
-import CallToAction from '@/components/CallToAction.vue'
+// import CallToAction from '@/components/CallToAction.vue'
 import ProductSlider from '@/components/products/ProductSlider.vue'
 import CategoryGrid from '@/components/products/CategoryGrid.vue'
 import productApi from '@/shared/api/productApi'
@@ -114,7 +114,7 @@ export default {
   components: {
     Hero,
     SectionTitle,
-    CallToAction,
+    // CallToAction,
     ProductSlider,
     CategoryGrid
   },

@@ -25,34 +25,34 @@
       title="Nông Nghiệp Công Nghệ Cao"
       subtitle="VỀ CHÚNG TÔI"
       description="Chúng tôi áp dụng các phương pháp canh tác hiện đại, kết hợp công nghệ tiên tiến để tạo ra các sản phẩm nông nghiệp chất lượng cao, an toàn và thân thiện với môi trường."
-      image="https://via.placeholder.com/600x400"
+      :image="require('@/assets/images/high-tech.jpg')"
       :features="aboutFeatures"
       buttonText="Tìm hiểu thêm"
       buttonLink="/about"
     />
     
     <!-- Call To Action -->
-    <CallToAction
+    <!-- <CallToAction
       title="Bạn cần tư vấn về dịch vụ nông nghiệp?"
       description="Chuyên gia của chúng tôi sẵn sàng hỗ trợ bạn. Hãy liên hệ ngay hôm nay để được tư vấn miễn phí."
       primaryButtonText="Liên hệ ngay"
       primaryButtonLink="/contact"
       :backgroundImage="require('@/assets/images/cta-bg.jpg')"
-    />
+    /> -->
   </div>
 </template>
 
 <script>
 import ServiceList from '@/components/services/ServiceList.vue'
 import FeatureSection from '@/components/FeatureSection.vue'
-import CallToAction from '@/components/CallToAction.vue'
+// import CallToAction from '@/components/CallToAction.vue'
 
 export default {
   name: 'HomePage',
   components: {
     ServiceList,
     FeatureSection,
-    CallToAction
+    // CallToAction
   },
   data() {
     return {

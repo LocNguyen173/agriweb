@@ -14,10 +14,8 @@
       title="Tại Sao Chọn Dịch Vụ Của Chúng Tôi"
       subtitle="LỢI ÍCH"
       description="Chúng tôi cung cấp các dịch vụ nông nghiệp chất lượng cao được thiết kế để tối ưu hóa năng suất và tính bền vững cho nông trại của bạn. Đội ngũ chuyên gia của chúng tôi làm việc cùng bạn để đảm bảo thành công dài hạn."
-      image="https://via.placeholder.com/600x400"
+      :image="require('@/assets/images/services.jpg')"
       :features="featuresList"
-      buttonText="Liên hệ với chúng tôi"
-      buttonLink="/contact"
     />
     
     <div class="specialized-services">
@@ -47,7 +45,7 @@
       primaryButtonLink="/contact"
       secondaryButtonText="Xem thêm sản phẩm"
       secondaryButtonLink="/products"
-      :backgroundImage="require('@/assets/images/cta-bg.jpg')"
+      :backgroundImage="require('@/assets/images/handshake.jpg')"
     />
   </div>
 </template>

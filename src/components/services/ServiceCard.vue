@@ -6,7 +6,7 @@
     <div class="service-content">
       <h3>{{ title }}</h3>
       <p>{{ description }}</p>
-      <router-link v-if="link" :to="link" class="read-more">Xem thêm <i class="fas fa-arrow-right"></i></router-link>
+      <!-- <router-link v-if="link" :to="link" class="read-more">Xem thêm <i class="fas fa-arrow-right"></i></router-link> -->
     </div>
   </div>
 </template>

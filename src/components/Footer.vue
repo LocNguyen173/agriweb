@@ -4,17 +4,17 @@
       <!-- Logo & Description Section -->
       <div class="footer-section">
         <div class="logo">
-          <img src="@/assets/images/logo.png" alt="Agrofarm Logo" />
+          <img src="@/assets/images/logo.png" alt="BVTV Nam Mekong Logo" />
         </div>
         <p class="description">
-          There are many variation of passa Morem Ipsum available, but the in majority have suffered.
+          BVTV Nam Mekong - Nhà cung cấp giải pháp bảo vệ thực vật hàng đầu, cam kết mang đến sản phẩm chất lượng cao cho nông nghiệp bền vững.
         </p>
         <div class="social-links">
-          <h3>Theo dõi tại:</h3>
+          <h3>Theo dõi chúng tôi:</h3>
           <div class="social-icons">
             <a href="#" class="social-icon"><i class="fab fa-facebook-f"></i></a>
-            <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
-            <a href="#" class="social-icon"><i class="fab fa-behance"></i></a>
+            <a href="#" class="social-icon"><i class="fab fa-youtube"></i></a>
+            <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
             <a href="#" class="social-icon"><i class="fab fa-linkedin-in"></i></a>
           </div>
         </div>
@@ -22,52 +22,38 @@
 
       <!-- Quick Links Section -->
       <div class="footer-section">
-        <h3>Có thể bạn quan tâm:</h3>
+        <h3>Liên kết nhanh:</h3>
         <ul class="footer-links">
-          <li><a href="/products">Sản phẩm của công ty</a></li>
-          <li><a href="/contact">Về chúng tôi</a></li>
-          <li><a href="/blogs">Sự kiện sắp tới</a></li>
-          <li><a href="/services">Dịch vụ hỗ trợ</a></li>
+          <li><a href="/">Trang chủ</a></li>
+          <li><a href="/products">Sản phẩm</a></li>
+          <li><a href="/services">Dịch vụ</a></li>
+          <li><a href="/blogs">Bài viết</a></li>
+          <li><a href="/contact">Liên hệ</a></li>
         </ul>
       </div>
 
       <!-- Contact Info Section -->
       <div class="footer-section">
-        <h3>Thông tin công ty:</h3>
+        <h3>Thông tin liên hệ:</h3>
         <div class="contact-info">
           <div class="contact-item">
-            <i class="fas fa-home"></i>
+            <i class="fas fa-map-marker-alt"></i>
             <div>
-              <h4>Địa chỉ</h4>
-              <p>E96 đường 56, KDC 586, Phường Phú Thứ, Quận Cái Răng, Thành phố Cần Thơ, Việt Nam</p>
+              <p>E96 đường 56, KDC 586, Phường Phú Thứ, Quận Cái Răng, TP. Cần Thơ</p>
             </div>
           </div>
           <div class="contact-item">
             <i class="fas fa-phone"></i>
             <div>
-              <h4>Số điện thoại</h4>
               <p>(922) 3354 2252</p>
             </div>
           </div>
           <div class="contact-item">
-            <i class="fas fa-globe"></i>
+            <i class="fas fa-envelope"></i>
             <div>
-              <h4>Email:</h4>
-              <p>example@gmail.com</p>
+              <p>info@bvtvnammekong.com</p>
             </div>
           </div>
-        </div>
-      </div>
-
-      <!-- Newsletter Section -->
-      <div class="footer-section">
-        <h3>Company Info:</h3>
-        <p class="newsletter-text">
-          There are many variation of passa Morem Ipsum available.
-        </p>
-        <div class="newsletter-form">
-          <input type="email" placeholder="Your Email Address" />
-          <button type="submit">Sign Up</button>
         </div>
       </div>
     </div>
@@ -75,11 +61,11 @@
     <!-- Copyright Section -->
     <div class="copyright">
       <div class="copyright-container">
-        <p>Copyright © techno all rights reserved.</p>
+        <p>© 2025 BVTV Nam Mekong. Tất cả quyền được bảo lưu.</p>
         <div class="footer-bottom-links">
-          <a href="#">Terms & Condition</a>
-          <a href="#">Privacy Policy</a>
-          <a href="#">Contact Us</a>
+          <a href="/contact">Liên hệ</a>
+          <a href="#">Chính sách bảo mật</a>
+          <a href="#">Điều khoản sử dụng</a>
         </div>
       </div>
     </div>
@@ -102,14 +88,15 @@ export default {
 .footer-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 0 20px 40px 20px;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 30px;
+  grid-template-columns: 2fr 1fr 1.5fr;
+  gap: 40px;
+  align-items: start;
 }
 
 .footer-section {
-  margin-bottom: 40px;
+  margin-bottom: 0;
 }
 
 .logo {
@@ -125,11 +112,14 @@ export default {
   height: 100px;
 }
 
-
-.description {
-  margin-bottom: 25px;
-  line-height: 1.6;
+.footer-section h3 {
+  margin-bottom: 20px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #8CC63F;
 }
+
+
 
 .social-links h3 {
   margin-bottom: 20px;
@@ -163,7 +153,7 @@ export default {
 }
 
 .footer-links li {
-  margin-bottom: 15px;
+  margin-bottom: 10px;
 }
 
 .footer-links a {
@@ -172,6 +162,8 @@ export default {
   display: flex;
   align-items: center;
   transition: color 0.3s;
+  font-size: 16px;
+  line-height: 1.4;
 }
 
 .footer-links a::before {
@@ -187,70 +179,47 @@ export default {
 .contact-info {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 15px;
 }
 
 .contact-item {
   display: flex;
-  align-items: flex-start;
-  gap: 15px;
+  align-items: center;
+  gap: 12px;
 }
 
 .contact-item i {
-  min-width: 40px;
-  min-height: 40px;
-  width: 40px;
-  height: 40px;
-  background-color: rgba(255, 255, 255, 0.1);
+  min-width: 32px;
+  min-height: 32px;
+  width: 32px;
+  height: 32px;
+  background-color: #8CC63F;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 22px; /* Đảm bảo icon đủ lớn */
-  flex-shrink: 0;  /* Không co lại khi thiếu không gian */
+  font-size: 16px;
+  flex-shrink: 0;
+  color: white;
 }
 
 .contact-item h4 {
   margin: 0 0 5px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #8CC63F;
 }
 
 .contact-item p {
   margin: 0;
+  font-size: 16px;
+  line-height: 1.4;
 }
 
-.newsletter-text {
-  margin-bottom: 20px;
-}
 
-.newsletter-form {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.newsletter-form input {
-  padding: 12px;
-  border: none;
-  border-radius: 25px;
-  outline: none;
-}
-
-.newsletter-form button {
-  padding: 12px;
-  border: none;
-  border-radius: 25px;
-  background-color: #8CC63F;
-  color: white;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.newsletter-form button:hover {
-  background-color: #7ab32f;
-}
 
 .copyright {
-  margin-top: 40px;
+  margin-top: 0;
   padding: 20px 0;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
@@ -283,12 +252,19 @@ export default {
 @media (max-width: 1024px) {
   .footer-container {
     grid-template-columns: repeat(2, 1fr);
+    gap: 30px;
   }
 }
 
 @media (max-width: 768px) {
   .footer-container {
     grid-template-columns: 1fr;
+    gap: 30px;
+    padding: 0 20px 30px 20px;
+  }
+
+  .footer {
+    padding-top: 40px;
   }
 
   .copyright-container {
@@ -303,21 +279,36 @@ export default {
 }
 
 @media (max-width: 480px) {
-  .footer-section {
-    margin-bottom: 30px;
+  .footer {
+    padding-top: 30px;
+  }
+
+  .footer-container {
+    gap: 25px;
+    padding: 0 20px 25px 20px;
   }
 
   .social-icons {
-    justify-content: center;
-  }
-
-  .newsletter-form {
-    width: 100%;
+    justify-content: flex-start;
   }
 
   .footer-bottom-links {
     flex-direction: column;
     gap: 10px;
   }
+
+  .logo {
+    padding: 15px 20px;
+  }
+
+  .logo img {
+    height: 80px;
+  }
+}
+
+.description {
+  margin-bottom: 25px;
+  line-height: 1.6;
+  font-size: 14px;
 }
 </style>

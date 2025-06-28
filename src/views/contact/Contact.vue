@@ -5,7 +5,7 @@
       title="Liên Hệ Với Chúng Tôi" 
       subtitle="Hãy kết nối với chúng tôi để được hỗ trợ nhanh nhất"
       :showButton="false"
-      backgroundImage="@/assets/images/contact-bg.jpg"
+      :backgroundImage="require('@/assets/images/contact-banner.jpg')"
     />
 
     <!-- Contact Info & Form Section -->
@@ -108,17 +108,17 @@
     </section>
     
     <!-- Call To Action -->
-    <CallToAction 
+    <!-- <CallToAction 
       title="Bạn đã sẵn sàng trở thành đối tác của chúng tôi?" 
       buttonText="Đăng Ký Ngay"
       buttonLink="/register"
-    />
+    /> -->
   </div>
 </template>
 
 <script>
 import Hero from '@/components/Hero.vue';
-import CallToAction from '@/components/CallToAction.vue';
+// import CallToAction from '@/components/CallToAction.vue';
 import ContactForm from '@/components/contact/ContactForm.vue';
 import GoogleMap from '@/components/contact/GoogleMap.vue';
 import FaqAccordion from '@/components/contact/FaqAccordion.vue';
@@ -127,7 +127,7 @@ export default {
   name: 'ContactPage',
   components: {
     Hero,
-    CallToAction,
+    // CallToAction,
     ContactForm,
     GoogleMap,
     FaqAccordion,

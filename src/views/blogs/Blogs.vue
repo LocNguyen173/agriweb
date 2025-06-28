@@ -21,74 +21,14 @@
           <h3>Danh mục</h3>
           <ul class="category-list">
             <li @click="filterCategory('all')" :class="{ active: selectedCategory === 'all' }">Tất cả</li>
-            <li @click="filterCategory('farming')" :class="{ active: selectedCategory === 'farming' }">Canh tác</li>
-            <li @click="filterCategory('livestock')" :class="{ active: selectedCategory === 'livestock' }">Chăn nuôi</li>
-            <li @click="filterCategory('tech')" :class="{ active: selectedCategory === 'tech' }">Công nghệ</li>
+            <li v-for="category in categories" :key="category._id" @click="filterCategory(category._id)" :class="{ active: selectedCategory === category._id }">
+              {{ category.name }}
+            </li>
           </ul>
         </div>
         
-        <!-- Thêm lịch -->
-        <div class="calendar-box">
-          <h3>Lịch</h3>
-          <div class="calendar-header">
-            <div class="calendar-nav">
-              <button class="calendar-btn"><i class="fas fa-chevron-left"></i></button>
-              <span>Tháng 3, 2025</span>
-              <button class="calendar-btn"><i class="fas fa-chevron-right"></i></button>
-            </div>
-          </div>
-          <div class="calendar-days">
-            <div class="weekday">CN</div>
-            <div class="weekday">T2</div>
-            <div class="weekday">T3</div>
-            <div class="weekday">T4</div>
-            <div class="weekday">T5</div>
-            <div class="weekday">T6</div>
-            <div class="weekday">T7</div>
-            
-            <div class="day empty"></div>
-            <div class="day empty"></div>
-            <div class="day empty"></div>
-            <div class="day empty"></div>
-            <div class="day empty"></div>
-            <div class="day">1</div>
-            <div class="day">2</div>
-            
-            <div class="day">3</div>
-            <div class="day">4</div>
-            <div class="day">5</div>
-            <div class="day">6</div>
-            <div class="day">7</div>
-            <div class="day">8</div>
-            <div class="day">9</div>
-            
-            <div class="day">10</div>
-            <div class="day">11</div>
-            <div class="day">12</div>
-            <div class="day">13</div>
-            <div class="day">14</div>
-            <div class="day">15</div>
-            <div class="day">16</div>
-            
-            <div class="day">17</div>
-            <div class="day">18</div>
-            <div class="day">19</div>
-            <div class="day">20</div>
-            <div class="day">21</div>
-            <div class="day">22</div>
-            <div class="day has-blog">23</div>
-            
-            <div class="day has-blog">24</div>
-            <div class="day has-blog">25</div>
-            <div class="day has-blog current">26</div>
-            <div class="day">27</div>
-            <div class="day">28</div>
-            <div class="day">29</div>
-            <div class="day">30</div>
-            
-            <div class="day">31</div>
-          </div>
-        </div>
+        <!-- Calendar component -->
+        <Calendar v-model:selectedDate="selectedDate" />
         
         <!-- Bài viết gần đây -->
         <div class="recent-posts">
@@ -131,25 +71,31 @@
 import Hero from '@/components/Hero.vue'
 import BlogCard from '@/components/blogs/BlogCard.vue'
 import BlogDetail from '@/components/blogs/BlogDetail.vue'
+import Calendar from '@/components/Calendar.vue'
 import blogApi from '@/shared/api/blogApi'
+import blogCategoryApi from '@/shared/api/blogCategoryApi'
 
 export default {
   name: 'BlogPage',
   components: {
     Hero,
     BlogCard,
-    BlogDetail
+    BlogDetail,
+    Calendar
   },
   data() {
     return {
       selectedCategory: 'all',
       selectedBlog: null,
       searchQuery: '',
-      blogs: [] // Khởi tạo rỗng, sẽ fetch từ API
+      blogs: [],
+      categories: [],
+      selectedDate: null, // Ngày được chọn từ calendar
     }
   },
   mounted() {
     this.fetchBlogs()
+    this.fetchCategories()
   },
   computed: {
     filteredAndSearchedBlogs() {
@@ -157,7 +103,14 @@ export default {
       
       // Lọc theo danh mục
       if (this.selectedCategory !== 'all') {
-        result = result.filter(blog => blog.category === this.selectedCategory);
+        result = result.filter(blog => {
+          // Nếu category là object, so sánh _id
+          if (blog.category && typeof blog.category === 'object') {
+            return blog.category._id === this.selectedCategory
+          }
+          // Nếu category là id
+          return blog.category === this.selectedCategory
+        })
       }
       
       // Lọc theo từ khóa tìm kiếm
@@ -165,7 +118,7 @@ export default {
         const query = this.searchQuery.toLowerCase().trim();
         result = result.filter(blog => 
           blog.title.toLowerCase().includes(query) || 
-          blog.preview.toLowerCase().includes(query) || 
+          blog.description.toLowerCase().includes(query) || 
           blog.content.toLowerCase().includes(query)
         );
       }
@@ -173,22 +126,51 @@ export default {
       return result;
     }
   },
+  watch: {
+    selectedDate(newDate) {
+      // Lọc blog theo ngày được chọn
+      if (newDate) {
+        this.fetchBlogsByDate(newDate);
+      } else {
+        // Không có ngày được chọn, hiển thị tất cả blog
+        this.fetchBlogs();
+      }
+    }
+  },
   methods: {
     async fetchBlogs() {
       try {
         const blogs = await blogApi.getAllBlogs()
-        // Chuyển đổi dữ liệu nếu cần (ví dụ: thêm trường date nếu backend trả về created_at)
         this.blogs = blogs.map(blog => ({
           ...blog,
           date: blog.created_at ? new Date(blog.created_at).toLocaleDateString('vi-VN') : '',
         }))
       } catch (error) {
-        // Xử lý lỗi nếu cần
         this.blogs = []
       }
     },
-    filterCategory(category) {
-      this.selectedCategory = category;
+    async fetchBlogsByDate(date) {
+      try {
+        const blogs = await blogApi.getBlogsByDate(date)
+        this.blogs = blogs.map(blog => ({
+          ...blog,
+          date: blog.created_at ? new Date(blog.created_at).toLocaleDateString('vi-VN') : '',
+        }))
+      } catch (error) {
+        console.error('Error fetching blogs by date:', error)
+        this.blogs = []
+      }
+    },
+    async fetchCategories() {
+      try {
+        const categories = await blogCategoryApi.getAllCategories()
+        this.categories = categories
+      } catch (error) {
+        this.categories = []
+      }
+    },
+    filterCategory(categoryId) {
+      this.selectedCategory = categoryId
     },
     openBlog(blog) {
       this.selectedBlog = blog;
@@ -240,7 +222,7 @@ export default {
 }
 
 /* Category styles */
-.category-box, .calendar-box, .recent-posts {
+.category-box, .recent-posts {
   background-color: #f5f5f5;
   padding: 20px;
   border-radius: 8px;
@@ -272,64 +254,6 @@ h3 {
 
 .category-list li:hover, .category-list li.active {
   background: #4CAF50;
-  color: white;
-}
-
-/* Calendar styles */
-.calendar-header {
-  margin-bottom: 15px;
-}
-
-.calendar-nav {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.calendar-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: #555;
-}
-
-.calendar-days {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 2px;
-}
-
-.weekday {
-  text-align: center;
-  font-weight: bold;
-  padding: 5px 0;
-  font-size: 0.8rem;
-}
-
-.day {
-  text-align: center;
-  padding: 7px 0;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.9rem;
-}
-
-.day:hover {
-  background-color: #e0e0e0;
-}
-
-.day.empty {
-  background: none;
-  cursor: default;
-}
-
-.day.has-blog {
-  color: #4CAF50;
-  font-weight: bold;
-}
-
-.day.current {
-  background-color: #4CAF50;
   color: white;
 }
 

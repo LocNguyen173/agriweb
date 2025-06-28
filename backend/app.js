@@ -1,4 +1,7 @@
 const express = require('express');
+const path = require("path");
+// Load biến môi trường từ file .env ở thư mục gốc
+require('dotenv').config({ path: path.join(__dirname, '../.env') });
 const connectDB = require('./db');
 const userRoutes = require('./routes/userRoutes');
 const blogRoutes = require('./routes/blogRoutes');
@@ -6,9 +9,9 @@ const blogCateRoutes = require('./routes/blogCateRoutes');
 const productRoutes = require('./routes/productRoutes');
 const productCateRoutes = require('./routes/productCateRoutes');
 const serviceRoutes = require('./routes/serviceRoutes');
+const contactRoutes = require('./routes/contactRoutes');
 const enableCORS = require("./middlewares/enableCORS");
 const bodyParser = require("body-parser");
-const path = require("path");
 
 const app = express();
 
@@ -32,6 +35,8 @@ app.use('/api/products', productRoutes);
 app.use('/api/product-categories', productCateRoutes);
 
 app.use('/api/services', serviceRoutes);
+
+app.use('/api/contact', contactRoutes);
 
 // Home route
 app.get('/', (req, res) => {

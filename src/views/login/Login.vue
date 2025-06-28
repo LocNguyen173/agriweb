@@ -61,17 +61,17 @@ if (localStorage.getItem('rememberedUser')) {
         <img src="@\assets\images\logo.png" alt="Logo" class="logo-img" />
         <span class="logo-text">BVTV NAM MEKONG</span>
       </div>
-      <h2>Sign in</h2>
-      <!-- <p class="small-text">
-        Don’t have an account? <a href="#">Create now</a>
-      </p> -->
+      <h2>Đăng Nhập</h2>
+      <p class="small-text">
+        Khu vực dành cho quản trị viên hệ thống
+      </p>
       <form @submit.prevent="onSubmit">
-        <label for="name">Username</label>
-        <input type="name" id="name" v-model="username" required />
+        <label for="name">Tên đăng nhập</label>
+        <input type="name" id="name" v-model="username" placeholder="Nhập tên đăng nhập" required />
 
-        <label for="password">Password</label>
+        <label for="password">Mật khẩu</label>
         <div class="password-wrapper">
-          <input :type="showPassword ? 'text' : 'password'" id="password" v-model="password" placeholder="••••••••" required />
+          <input :type="showPassword ? 'text' : 'password'" id="password" v-model="password" placeholder="Nhập mật khẩu" required />
           <button type="button" class="toggle-password" @click="showPassword = !showPassword">
             <span v-if="showPassword">🙈</span>
             <span v-else>👁️</span>
@@ -81,13 +81,13 @@ if (localStorage.getItem('rememberedUser')) {
         <div class="options">
           <label>
             <input type="checkbox" v-model="rememberMe" />
-            Remember me
+            Ghi nhớ đăng nhập
           </label>
         </div>
 
         <button class="sign-in-btn" type="submit" :disabled="isLoading">
           <span v-if="isLoading">Đang đăng nhập...</span>
-          <span v-else>Sign in</span>
+          <span v-else>Đăng Nhập</span>
         </button>
       </form>
       <!-- Modal thông báo lỗi -->
@@ -122,23 +122,22 @@ if (localStorage.getItem('rememberedUser')) {
       </div>
     </div>
     <div class="login-right">
-      <!-- Bạn có thể thay đổi nội dung panel này để quảng cáo công ty thuốc BVTV -->
       <div class="support">
-        <span>🛟</span> Support
+        <span>🌱</span> Hỗ trợ
       </div>
       <div class="ad-card">
-        <h3>Reach financial goals faster</h3>
-        <p>Use your Venus card around the world with no hidden fees. Hold, transfer and spend money.</p>
-        <button class="learn-more">Learn more</button>
-        <div class="earnings">
-          <span>Earnings</span>
-          <strong>$350.40</strong>
-        </div>
+        <h3>Giải pháp bảo vệ thực vật toàn diện</h3>
+        <p>BVTV Nam Mekong cung cấp các sản phẩm và dịch vụ chất lượng cao cho nông nghiệp bền vững và hiệu quả.</p>
+        <a href="/" class="learn-more">Tìm hiểu thêm</a>
+        <!-- <div class="admin-notice">
+          <span>⚠️ Thông báo</span>
+          <strong>Chỉ dành cho quản trị viên</strong>
+        </div> -->
       </div>
       <div class="features">
-        <h3>Introducing new features</h3>
+        <h3>Cam kết chất lượng</h3>
         <p>
-          Analyzing previous trends ensures that businesses always make the right decision. And as the scale of the decision and its impact magnifies...
+          Với nhiều năm kinh nghiệm trong lĩnh vực bảo vệ thực vật, chúng tôi luôn đặt chất lượng sản phẩm và sự hài lòng của khách hàng lên hàng đầu...
         </p>
       </div>
     </div>
@@ -148,21 +147,25 @@ if (localStorage.getItem('rememberedUser')) {
 <style scoped>
 .login-container {
   display: flex;
-  min-height: 600px;
-  max-width: 900px;
-  margin: 40px auto;
-  background: #e3e3e3;
-  border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+  min-height: 100vh;
+  max-width: 100vw;
+  margin: 0;
+  background: linear-gradient(135deg, #f0f8f0 0%, #e8f5e8 50%, #d4edda 100%);
+  border-radius: 0;
+  box-shadow: none;
   overflow: hidden;
 }
 .login-left {
-  flex: 1;
+  flex: 2;
   padding: 48px 40px;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  background: #f8fafb;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  margin: 40px 20px 40px 40px;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.1);
 }
 .logo {
   display: flex;
@@ -183,16 +186,25 @@ h2 {
   margin-bottom: 8px;
   font-size: 2rem;
   font-weight: 700;
+  color: #1a3c34;
 }
 .small-text {
-  color: #888;
+  color: #666;
   margin-bottom: 24px;
   font-size: 0.95rem;
+  background: #f0f8f0;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border-left: 4px solid #1a3c34;
 }
 a {
   color: #1a3c34;
-  text-decoration: underline;
+  text-decoration: none;
   font-weight: 500;
+  transition: color 0.3s ease;
+}
+a:hover {
+  color: #2e5d4f;
 }
 form {
   display: flex;
@@ -206,13 +218,23 @@ label {
 }
 input[type="email"],
 input[type="password"],
-input[type="text"] {
-  padding: 10px 12px;
-  border: 1px solid #dbe2e8;
-  border-radius: 6px;
+input[type="text"],
+input[type="name"] {
+  padding: 12px 16px;
+  border: 2px solid #e0e5ea;
+  border-radius: 8px;
   font-size: 1rem;
   margin-bottom: 8px;
   background: #fff;
+  transition: border-color 0.3s ease;
+}
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="text"]:focus,
+input[type="name"]:focus {
+  outline: none;
+  border-color: #1a3c34;
+  box-shadow: 0 0 0 3px rgba(26, 60, 52, 0.1);
 }
 .password-wrapper {
   position: relative;
@@ -242,19 +264,27 @@ input[type="text"] {
   font-size: 0.97rem;
 }
 .sign-in-btn {
-  background: #1a3c34;
+  background: linear-gradient(135deg, #1a3c34 0%, #2e5d4f 100%);
   color: #fff;
   border: none;
   border-radius: 8px;
-  padding: 12px 0;
+  padding: 14px 0;
   font-size: 1.1rem;
   font-weight: 600;
   margin-bottom: 16px;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 16px rgba(26, 60, 52, 0.3);
 }
 .sign-in-btn:hover {
-  background: #215c4b;
+  background: linear-gradient(135deg, #215c4b 0%, #3a7462 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(26, 60, 52, 0.4);
+}
+.sign-in-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
 }
 .divider {
   text-align: center;
@@ -304,76 +334,93 @@ input[type="text"] {
   background: #e7f3ff;
 }
 .login-right {
-  flex: 1;
-  background: linear-gradient(135deg, #1a3c34 70%, #2e5d4f 100%);
+  flex: 0.8;
+  background: linear-gradient(135deg, #1a3c34 0%, #2e5d4f 70%, #4a8066 100%);
   color: #fff;
-  padding: 48px 40px;
+  padding: 32px 24px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   position: relative;
+  margin: 40px 40px 40px 20px;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+  min-width: 300px;
 }
 .support {
   position: absolute;
-  top: 32px;
-  right: 40px;
-  font-size: 1.1rem;
+  top: 24px;
+  right: 24px;
+  font-size: 1rem;
   opacity: 0.9;
   display: flex;
   align-items: center;
   gap: 6px;
 }
 .ad-card {
-  background: #fff;
+  background: rgba(255, 255, 255, 0.95);
   color: #1a3c34;
-  border-radius: 14px;
-  padding: 28px 24px 20px 24px;
-  margin-bottom: 32px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-  max-width: 340px;
+  border-radius: 12px;
+  padding: 20px 18px 16px 18px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+  backdrop-filter: blur(10px);
 }
 .ad-card h3 {
-  font-size: 1.2rem;
-  margin-bottom: 8px;
+  font-size: 1.1rem;
+  margin-bottom: 6px;
   font-weight: 700;
 }
 .ad-card p {
-  font-size: 0.98rem;
-  margin-bottom: 14px;
+  font-size: 0.9rem;
+  margin-bottom: 12px;
+  line-height: 1.4;
 }
 .learn-more {
   background: #1a3c34;
   color: #fff;
   border: none;
   border-radius: 6px;
-  padding: 6px 18px;
-  font-size: 0.97rem;
-  margin-bottom: 14px;
+  padding: 6px 16px;
+  font-size: 0.9rem;
+  margin-bottom: 12px;
   cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  transition: all 0.3s ease;
 }
-.earnings {
-  margin-top: 10px;
-  font-size: 0.98rem;
+.learn-more:hover {
+  background: #2e5d4f;
+  transform: translateY(-1px);
+  color: #fff;
+}
+.admin-notice {
+  margin-top: 8px;
+  font-size: 0.85rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  background: #fff3cd;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border-left: 4px solid #ffc107;
 }
-.earnings strong {
-  font-size: 1.15rem;
-  color: #1a3c34;
+.admin-notice strong {
+  font-size: 0.8rem;
+  color: #856404;
 }
 .features {
-  margin-top: 24px;
-  max-width: 340px;
+  margin-top: 16px;
 }
 .features h3 {
-  font-size: 1.15rem;
-  margin-bottom: 8px;
+  font-size: 1rem;
+  margin-bottom: 6px;
   font-weight: 700;
 }
 .features p {
-  font-size: 0.97rem;
+  font-size: 1rem;
   color: #e0e5ea;
+  line-height: 1.4;
 }
 .modal-overlay {
   position: fixed;
@@ -444,13 +491,17 @@ input[type="text"] {
 @media (max-width: 900px) {
   .login-container {
     flex-direction: column;
-    max-width: 98vw;
+    max-width: 100vw;
+    min-height: 100vh;
   }
-  .login-left, .login-right {
+  .login-left {
+    margin: 20px;
     padding: 32px 20px;
   }
   .login-right {
+    margin: 0 20px 20px 20px;
     min-height: 320px;
+    padding: 32px 20px;
   }
 }
 </style>

@@ -6,12 +6,12 @@
         <h2>{{ title }}</h2>
         <p>{{ description }}</p>
         <div class="cta-buttons">
-          <router-link v-if="primaryButtonLink" :to="primaryButtonLink" class="primary-button">
+            <a v-if="primaryButtonLink" :href="primaryButtonLink" class="primary-button">
             {{ primaryButtonText }}
-          </router-link>
-          <router-link v-if="secondaryButtonLink" :to="secondaryButtonLink" class="secondary-button">
+            </a>
+            <a v-if="secondaryButtonLink" :href="secondaryButtonLink" class="secondary-button">
             {{ secondaryButtonText }}
-          </router-link>
+            </a>
         </div>
       </div>
     </div>
