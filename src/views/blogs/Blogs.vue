@@ -64,6 +64,13 @@
       :blog="selectedBlog" 
       @close="selectedBlog = null"
     />
+    
+    <!-- Modal Error -->
+    <Error 
+      :visible="showError" 
+      :message="errorMessage" 
+      @close="closeError" 
+    />
   </div>
 </template>
 
@@ -72,6 +79,7 @@ import Hero from '@/components/Hero.vue'
 import BlogCard from '@/components/blogs/BlogCard.vue'
 import BlogDetail from '@/components/blogs/BlogDetail.vue'
 import Calendar from '@/components/Calendar.vue'
+import Error from '@/components/modal/Error.vue'
 import blogApi from '@/shared/api/blogApi'
 import blogCategoryApi from '@/shared/api/blogCategoryApi'
 
@@ -81,7 +89,8 @@ export default {
     Hero,
     BlogCard,
     BlogDetail,
-    Calendar
+    Calendar,
+    Error
   },
   data() {
     return {
@@ -91,6 +100,8 @@ export default {
       blogs: [],
       categories: [],
       selectedDate: null, // Ngày được chọn từ calendar
+      showError: false,
+      errorMessage: ''
     }
   },
   mounted() {
@@ -157,9 +168,17 @@ export default {
           date: blog.created_at ? new Date(blog.created_at).toLocaleDateString('vi-VN') : '',
         }))
       } catch (error) {
-        console.error('Error fetching blogs by date:', error)
+        this.showErrorModal('Lỗi khi tải bài viết theo ngày. Vui lòng thử lại sau.')
         this.blogs = []
       }
+    },
+    showErrorModal(message) {
+      this.errorMessage = message
+      this.showError = true
+    },
+    closeError() {
+      this.showError = false
+      this.errorMessage = ''
     },
     async fetchCategories() {
       try {

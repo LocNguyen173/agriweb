@@ -19,6 +19,13 @@
       </template>
     </Warning>
     
+    <!-- Modal Error -->
+    <Error 
+      :visible="showError" 
+      :message="errorMessage" 
+      @close="closeError" 
+    />
+    
     <h1>Quản lý bài viết</h1>
     
     <!-- Form thêm/sửa bài viết -->
@@ -138,6 +145,7 @@ import { ref, onMounted } from 'vue'
 import blogApi from '@/shared/api/blogApi'
 import blogCategoryApi from '@/shared/api/blogCategoryApi'
 import Warning from '@/components/modal/Warning.vue'
+import Error from '@/components/modal/Error.vue'
 import Editor from '@tinymce/tinymce-vue'
 
 // Hàm tạo UUID đơn giản
@@ -176,10 +184,25 @@ const previewImage = ref(null)
 const showWarning = ref(false)
 const warningMessage = ref('')
 
+// State cho modal error
+const showError = ref(false)
+const errorMessage = ref('')
+
 // State cho xác nhận xóa
 const showDeleteConfirm = ref(false)
 const deleteConfirmMessage = ref('')
 let blogToDelete = null
+
+// Helper functions cho modal error
+function showErrorModal(message) {
+  errorMessage.value = message
+  showError.value = true
+}
+
+function closeError() {
+  showError.value = false
+  errorMessage.value = ''
+}
 
 const tinymceApiKey = process.env.VUE_APP_TINYMCE_API_KEY
 
@@ -259,8 +282,7 @@ function handleEditorImageUpload(blobInfo, progress) {
         resolve(response.imageUrl)
       })
       .catch(error => {
-        console.error('Lỗi upload ảnh chi tiết:', error)
-        console.error('Error response:', error.response?.data)
+        showErrorModal('Lỗi khi tải ảnh lên server. Vui lòng thử lại sau.')
         reject({ message: `Lỗi upload ảnh: ${error.message}`, remove: true })
       })
     }
@@ -326,9 +348,7 @@ async function createBlog() {
     resetForm()
     previewImage.value = null
   } catch (err) {
-    console.error('Tạo bài viết thất bại:', err)
-    warningMessage.value = 'Tạo bài viết thất bại. Vui lòng thử lại.'
-    showWarning.value = true
+    showErrorModal('Tạo bài viết thất bại. Vui lòng thử lại sau.')
   }
 }
 
@@ -345,9 +365,7 @@ async function updateBlog() {
     editingId = null
     previewImage.value = null // Reset preview ảnh
   } catch (err) {
-    console.error('Cập nhật bài viết thất bại:', err)
-    warningMessage.value = 'Cập nhật bài viết thất bại. Vui lòng thử lại.'
-    showWarning.value = true
+    showErrorModal('Cập nhật bài viết thất bại. Vui lòng thử lại sau.')
   }
 }
 
@@ -378,9 +396,7 @@ async function confirmDelete() {
     
     blogToDelete = null
   } catch (err) {
-    console.error('Xóa bài viết thất bại:', err)
-    warningMessage.value = 'Xóa bài viết thất bại. Vui lòng thử lại.'
-    showWarning.value = true
+    showErrorModal('Xóa bài viết thất bại. Vui lòng thử lại sau.')
   }
 }
 
@@ -416,6 +432,7 @@ async function editBlog(blog) {
       form.value.content = res.text || ''
     } catch (err) {
       form.value.content = ''
+      showErrorModal('Không thể tải nội dung bài viết. Vui lòng thử lại sau.')
     }
   }
 }

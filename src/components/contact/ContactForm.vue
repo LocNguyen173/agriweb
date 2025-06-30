@@ -67,14 +67,25 @@
         {{ isSubmitting ? 'Đang gửi...' : 'Gửi tin nhắn' }}
       </button>
     </form>
+    
+    <!-- Modal Error -->
+    <Error 
+      :visible="showError" 
+      :message="errorMessage" 
+      @close="closeError" 
+    />
   </div>
 </template>
 
 <script>
 import contactApi from '@/shared/api/contactApi'
+import Error from '@/components/modal/Error.vue'
 
 export default {
   name: 'ContactForm',
+  components: {
+    Error
+  },
   data() {
     return {
       formData: {
@@ -85,7 +96,9 @@ export default {
       },
       errors: {},
       isSubmitting: false,
-      showSuccess: false
+      showSuccess: false,
+      showError: false,
+      errorMessage: ''
     }
   },
   methods: {
@@ -120,12 +133,18 @@ export default {
         this.showSuccess = true;
         this.resetForm();
       } catch (error) {
-        console.error('Lỗi gửi email:', error);
-        // Hiển thị thông báo lỗi cho người dùng
-        alert('Có lỗi xảy ra khi gửi email. Vui lòng thử lại sau.');
+        this.showErrorModal('Có lỗi xảy ra khi gửi email. Vui lòng thử lại sau.');
       } finally {
         this.isSubmitting = false;
       }
+    },
+    showErrorModal(message) {
+      this.errorMessage = message;
+      this.showError = true;
+    },
+    closeError() {
+      this.showError = false;
+      this.errorMessage = '';
     },
     resetForm() {
       this.formData = {

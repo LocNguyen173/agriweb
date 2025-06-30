@@ -20,6 +20,13 @@
       </template>
     </Warning>
 
+    <!-- Modal Error -->
+    <Error 
+      :visible="showError" 
+      :message="errorMessage" 
+      @close="closeError" 
+    />
+
     <!-- Form thêm/sửa sản phẩm -->
     <div class="product-form">
       <h2>{{ isEdit ? 'Chỉnh sửa sản phẩm' : 'Thêm sản phẩm mới' }}</h2>
@@ -132,6 +139,7 @@ import { ref, onMounted } from 'vue'
 import productApi from '@/shared/api/productApi'
 import productCategoryApi from '@/shared/api/productCategoryApi'
 import Warning from '@/components/modal/Warning.vue'
+import Error from '@/components/modal/Error.vue'
 import ImageModal from '@/components/modal/ImageModal.vue'
 
 const fileInputRef = ref(null)
@@ -189,10 +197,25 @@ const showWarning = ref(false)
 const warningMessage = ref('')
 const previewImage = ref('')
 
+// State cho modal error
+const showError = ref(false)
+const errorMessage = ref('')
+
 // State cho xác nhận xóa
 const showDeleteConfirm = ref(false)
 const deleteConfirmMessage = ref('')
 let productToDelete = null
+
+// Helper functions cho modal error
+function showErrorModal(message) {
+  errorMessage.value = message
+  showError.value = true
+}
+
+function closeError() {
+  showError.value = false
+  errorMessage.value = ''
+}
 
 function handleImageUpload(e) {
   const file = e.target.files[0]
@@ -237,7 +260,7 @@ async function createProduct() {
     products.value.push(newProduct)
     resetForm()
   } catch (err) {
-    alert('Không thể tạo sản phẩm!')
+    showErrorModal('Không thể tạo sản phẩm. Vui lòng thử lại sau.')
   }
 }
 
@@ -253,7 +276,7 @@ async function updateProduct() {
     isEdit.value = false
     editingId = null
   } catch (err) {
-    alert('Không thể cập nhật sản phẩm!')
+    showErrorModal('Không thể cập nhật sản phẩm. Vui lòng thử lại sau.')
   }
 }
 
@@ -282,9 +305,7 @@ async function confirmDelete() {
     
     productToDelete = null
   } catch (err) {
-    console.error('Xóa sản phẩm thất bại:', err)
-    warningMessage.value = 'Xóa sản phẩm thất bại. Vui lòng thử lại.'
-    showWarning.value = true
+    showErrorModal('Xóa sản phẩm thất bại. Vui lòng thử lại sau.')
   }
 }
 
@@ -332,7 +353,7 @@ function openImageModal(url) {
     modalImageUrl.value = url
     showImageModal.value = true
   } catch (err) {
-    console.error('Lỗi khi mở modal ảnh:', err)
+    showErrorModal('Lỗi khi hiển thị ảnh. Vui lòng thử lại sau.')
   }
 }
 
@@ -342,7 +363,7 @@ function closeImageModal() {
     modalImageUrl.value = ''
     console.log('Đã đóng modal ảnh')
   } catch (err) {
-    console.error('Lỗi khi đóng modal ảnh:', err)
+    showErrorModal('Lỗi khi đóng modal ảnh. Vui lòng thử lại sau.')
   }
 }
 </script>

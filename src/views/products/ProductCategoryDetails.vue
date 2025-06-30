@@ -203,6 +203,13 @@
       secondaryButtonLink="/products"
       :backgroundImage="require('@/assets/images/cta-bg.jpg')"
     /> -->
+    
+    <!-- Modal Error -->
+    <Error 
+      :visible="showError" 
+      :message="errorMessage" 
+      @close="closeError" 
+    />
   </div>
 </template>
 
@@ -210,6 +217,7 @@
 import SectionTitle from '@/components/SectionTitle.vue'
 import ProductCard from '@/components/products/ProductCard.vue'
 import CategoryGrid from '@/components/products/CategoryGrid.vue'
+import Error from '@/components/modal/Error.vue'
 import productApi from '@/shared/api/productApi'
 import productCategoryApi from '@/shared/api/productCategoryApi'
 import { getCategoryIcon } from '@/shared/constants/categoryIcons'
@@ -219,7 +227,8 @@ export default {
   components: {
     SectionTitle,
     ProductCard,
-    CategoryGrid
+    CategoryGrid,
+    Error
   },
   data() {
     return {
@@ -239,6 +248,10 @@ export default {
       
       // Filters and sorting
       sortBy: 'name',
+      
+      // Error handling
+      showError: false,
+      errorMessage: '',
       viewMode: 'grid', // 'grid' or 'list'
       priceFilter: {
         min: null,
@@ -369,11 +382,11 @@ export default {
           this.categoryName = this.category.name
         } else {
           // Nếu không tìm thấy category, redirect về trang products
-          console.error('Category not found')
+          this.showErrorModal('Danh mục không tồn tại')
           this.$router.push('/products')
         }
       } catch (error) {
-        console.error('Failed to fetch category:', error)
+        this.showErrorModal('Lỗi khi tải thông tin danh mục. Vui lòng thử lại sau.')
         
         // Fallback: hiển thị thông tin mặc định hoặc redirect
         if (error.response && error.response.status === 404) {
@@ -419,7 +432,7 @@ export default {
         this.filteredProducts = [...this.products]
         this.applySorting()
       } catch (error) {
-        console.error('Failed to fetch products:', error)
+        this.showErrorModal('Lỗi khi tải danh sách sản phẩm. Vui lòng thử lại sau.')
         
         // Fallback: sử dụng sample data nếu API lỗi
         if (error.response && error.response.status === 404) {
@@ -454,7 +467,7 @@ export default {
           icon: getCategoryIcon(category._id || category.id)
         }))
       } catch (error) {
-        console.error('Failed to fetch related categories:', error)
+        this.showErrorModal('Lỗi khi tải danh mục liên quan. Vui lòng thử lại sau.')
         // Fallback: hiển thị categories mặc định
         this.relatedCategories = [
           {
@@ -543,7 +556,17 @@ export default {
     handleAddToCart(product) {
       // TODO: Implement add to cart functionality
       console.log('Adding to cart:', product)
-    }
+    },
+    
+    showErrorModal(message) {
+      this.errorMessage = message
+      this.showError = true
+    },
+    
+    closeError() {
+      this.showError = false
+      this.errorMessage = ''
+    },
   },
   
   async created() {

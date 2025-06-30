@@ -30,6 +30,13 @@
         </div>
       </div>
     </div>
+    
+    <!-- Modal Error -->
+    <Error 
+      :visible="showError" 
+      :message="errorMessage" 
+      @close="closeError" 
+    />
   </div>
 </template>
 
@@ -37,9 +44,13 @@
 import { ref, computed, onMounted } from 'vue'
 import blogApi from '@/shared/api/blogApi'
 import DOMPurify from 'dompurify' // Bạn cần cài đặt thư viện này: npm install dompurify
+import Error from '@/components/modal/Error.vue'
 
 export default {
   name: 'BlogDetail',
+  components: {
+    Error
+  },
   props: {
     blog: {
       type: Object,
@@ -48,11 +59,23 @@ export default {
   },
   setup(props) {
     const content = ref('')
+    const showError = ref(false)
+    const errorMessage = ref('')
     
     // Lọc nội dung HTML để tránh XSS attacks
     const sanitizedContent = computed(() => {
       return DOMPurify.sanitize(content.value || props.blog.content || '')
     })
+    
+    function showErrorModal(message) {
+      errorMessage.value = message
+      showError.value = true
+    }
+    
+    function closeError() {
+      showError.value = false
+      errorMessage.value = ''
+    }
     
     onMounted(async () => {
       // Nếu content là URL Firestore thì fetch nội dung thực
@@ -61,7 +84,7 @@ export default {
           const response = await blogApi.getBlogContent(props.blog._id)
           content.value = response.text || ''
         } catch (err) {
-          console.error('Không thể tải nội dung bài viết:', err)
+          showErrorModal('Không thể tải nội dung bài viết. Vui lòng thử lại sau.')
         }
       } else {
         content.value = props.blog.content || ''
@@ -90,6 +113,10 @@ export default {
     return {
       content,
       sanitizedContent,
+      showError,
+      errorMessage,
+      showErrorModal,
+      closeError,
       formatDate,
       getCategoryName
     }

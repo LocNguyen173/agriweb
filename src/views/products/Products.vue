@@ -96,6 +96,13 @@
       secondaryButtonLink="/products"
       :backgroundImage="require('@/assets/images/cta-bg.jpg')"
     /> -->
+    
+    <!-- Modal Error -->
+    <Error 
+      :visible="showError" 
+      :message="errorMessage" 
+      @close="closeError" 
+    />
   </div>
 </template>
 
@@ -105,6 +112,7 @@ import SectionTitle from '@/components/SectionTitle.vue'
 // import CallToAction from '@/components/CallToAction.vue'
 import ProductSlider from '@/components/products/ProductSlider.vue'
 import CategoryGrid from '@/components/products/CategoryGrid.vue'
+import Error from '@/components/modal/Error.vue'
 import productApi from '@/shared/api/productApi'
 import productCategoryApi from '@/shared/api/productCategoryApi'
 import { getCategoryIcon } from '@/shared/constants/categoryIcons';
@@ -116,7 +124,8 @@ export default {
     SectionTitle,
     // CallToAction,
     ProductSlider,
-    CategoryGrid
+    CategoryGrid,
+    Error
   },
   data() {
     return {
@@ -127,6 +136,8 @@ export default {
       isLoading: false,
       isLoadingCategories: false,
       productCategories: [],  // Thay đổi từ mảng dữ liệu cứng sang mảng rỗng
+      showError: false,
+      errorMessage: '',
       productBenefits: [
         {
           title: 'Giao nhận linh hoạt',
@@ -181,6 +192,14 @@ export default {
         this.isLoading = false
       }
     },
+    showErrorModal(message) {
+      this.errorMessage = message
+      this.showError = true
+    },
+    closeError() {
+      this.showError = false
+      this.errorMessage = ''
+    },
     async fetchCategories() {
       try {
         this.isLoadingCategories = true
@@ -192,7 +211,7 @@ export default {
           icon: getCategoryIcon(category._id || category.id)
         }))
       } catch (error) {
-        console.error('Failed to fetch categories:', error)
+        this.showErrorModal('Lỗi khi tải danh mục sản phẩm. Vui lòng thử lại sau.')
         // Dữ liệu fallback nếu có lỗi
         this.productCategories = [
           {

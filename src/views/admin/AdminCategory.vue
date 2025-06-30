@@ -83,6 +83,13 @@
         </div>
       </template>
     </Warning>
+
+    <!-- Modal Error -->
+    <Error 
+      :visible="showError" 
+      :message="errorMessage" 
+      @close="closeError" 
+    />
   </div>
 </template>
 
@@ -91,6 +98,7 @@ import { ref, onMounted } from 'vue'
 import blogCategoryApi from '@/shared/api/blogCategoryApi'
 import productCategoryApi from '@/shared/api/productCategoryApi'
 import Warning from '@/components/modal/Warning.vue'
+import Error from '@/components/modal/Error.vue'
 
 const categories = ref([])
 const form = ref({
@@ -106,6 +114,21 @@ const showDeleteModal = ref(false)
 const deleteId = ref(null)
 const deleteMessage = ref('')
 
+// State cho modal error
+const showError = ref(false)
+const errorMessage = ref('')
+
+// Helper functions cho modal error
+function showErrorModal(message) {
+  errorMessage.value = message
+  showError.value = true
+}
+
+function closeError() {
+  showError.value = false
+  errorMessage.value = ''
+}
+
 // Load tất cả danh mục (blog + product)
 const loadCategories = async () => {
   try {
@@ -119,8 +142,7 @@ const loadCategories = async () => {
       ...blogRes
     ]
   } catch (err) {
-    // Có thể hiển thị thông báo lỗi ở đây
-    console.error('Lỗi khi tải danh mục:', err)
+    showErrorModal('Lỗi khi tải danh mục. Vui lòng thử lại sau.')
   }
 }
 
@@ -145,7 +167,7 @@ const createCategory = async () => {
     await loadCategories()
     form.value = { name: '', description: '', type: '' }
   } catch (err) {
-    console.error('Lỗi khi tạo danh mục:', err)
+    showErrorModal('Lỗi khi tạo danh mục. Vui lòng thử lại sau.')
   }
 }
 
@@ -178,7 +200,7 @@ const updateCategory = async () => {
     await loadCategories()
     cancelEdit()
   } catch (err) {
-    console.error('Lỗi khi cập nhật danh mục:', err)
+    showErrorModal('Lỗi khi cập nhật danh mục. Vui lòng thử lại sau.')
   }
 }
 
@@ -203,7 +225,7 @@ const confirmDeleteCategory = async () => {
     }
     await loadCategories()
   } catch (err) {
-    console.error('Lỗi khi xóa danh mục:', err)
+    showErrorModal('Lỗi khi xóa danh mục. Vui lòng thử lại sau.')
   } finally {
     showDeleteModal.value = false
     deleteId.value = null
