@@ -117,8 +117,17 @@ export default {
   align-items: center;
 }
 
+.logo {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 24px 0 rgba(0,0,0,0.15);
+  padding: 5px 6px;
+  display: inline-block;
+  /* margin-bottom: 20px; */
+}
+
 .logo img {
-  height: 75px;
+  height: 60px;
 }
 
 .desktop-menu ul {

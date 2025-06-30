@@ -70,37 +70,37 @@ export default {
     return {
       mainServices: [
         {
-          icon: 'https://via.placeholder.com/32',
+          icon: require('@/assets/images/icons/tractor.png'),
           title: 'Dịch vụ làm đất',
           description: 'Dịch vụ làm đất chuyên nghiệp với máy móc hiện đại đảm bảo mặt ruộng phẳng và tơi xốp, giúp cây trồng phát triển tốt.',
           link: '/services/soil-preparation'
         },
         {
-          icon: 'https://via.placeholder.com/32',
+          icon: require('@/assets/images/icons/consultant.png'),
           title: 'Tư vấn canh tác',
           description: 'Cung cấp dịch vụ tư vấn về kỹ thuật canh tác, loại cây trồng phù hợp, thời vụ và phương pháp tăng năng suất.',
           link: '/services/farming-advisory'
         },
         {
-          icon: 'https://via.placeholder.com/32',
+          icon: require('@/assets/images/icons/irrigation.png'),
           title: 'Hệ thống tưới tiêu',
           description: 'Thiết kế và lắp đặt hệ thống tưới tiêu tự động hiện đại, tiết kiệm nước và tối ưu cho từng loại cây trồng.',
           link: '/services/irrigation-system'
         },
         {
-          icon: 'https://via.placeholder.com/32',
+          icon: require('@/assets/images/icons/potted-plant.png'),
           title: 'Bảo vệ thực vật',
           description: 'Dịch vụ phòng trừ sâu bệnh, cỏ dại bằng các phương pháp hiện đại, an toàn và thân thiện với môi trường.',
           link: '/services/plant-protection'
         },
         {
-          icon: 'https://via.placeholder.com/32',
+          icon: require('@/assets/images/icons/drone.png'),
           title: 'Thu hoạch cơ giới',
           description: 'Dịch vụ thu hoạch bằng máy móc hiện đại, giúp tiết kiệm thời gian, nhân công và giảm tỷ lệ hao hụt.',
           link: '/services/mechanical-harvesting'
         },
         {
-          icon: 'https://via.placeholder.com/32',
+          icon: require('@/assets/images/icons/technology.png'),
           title: 'Tư vấn nông nghiệp 4.0',
           description: 'Tư vấn ứng dụng công nghệ cao trong nông nghiệp: IoT, tự động hóa, giám sát từ xa và phân tích dữ liệu.',
           link: '/services/agriculture-consulting'
@@ -115,22 +115,22 @@ export default {
       ],
       specializedServices: [
         {
-          icon: 'https://via.placeholder.com/32',
+          icon: require('@/assets/images/icons/analysis.png'),
           title: 'Phân tích đất và nước',
           description: 'Dịch vụ kiểm tra và phân tích chất lượng đất, nước để đưa ra khuyến nghị về dinh dưỡng và cải tạo.'
         },
         {
-          icon: 'https://via.placeholder.com/32',
+          icon: require('@/assets/images/icons/drone.png'),
           title: 'Giám sát bằng drone',
           description: 'Sử dụng drone để giám sát cây trồng, phát hiện sớm bệnh hại và đánh giá tình trạng sinh trưởng.'
         },
         {
-          icon: 'https://via.placeholder.com/32',
+          icon: require('@/assets/images/icons/certification.png'),
           title: 'Chứng nhận nông sản',
           description: 'Hỗ trợ quy trình xin chứng nhận VietGAP, GlobalGAP, hữu cơ và các tiêu chuẩn chất lượng khác.'
         },
         {
-          icon: 'https://via.placeholder.com/32',
+          icon: require('@/assets/images/icons/supply.png'),
           title: 'Kết nối chuỗi cung ứng',
           description: 'Giúp nông dân kết nối với nhà máy chế biến, kênh phân phối và thị trường xuất khẩu.'
         }

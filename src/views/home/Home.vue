@@ -58,19 +58,19 @@ export default {
     return {
       highlightedServices: [
         {
-          icon: 'https://via.placeholder.com/32',
+          icon: require('@/assets/images/icons/tractor.png'),
           title: 'Dịch vụ làm đất',
           description: 'Dịch vụ làm đất chuyên nghiệp với máy móc hiện đại đảm bảo mặt ruộng phẳng và tơi xốp.',
           link: '/services/soil-preparation'
         },
         {
-          icon: 'https://via.placeholder.com/32',
+          icon: require('@/assets/images/icons/consultant.png'),
           title: 'Tư vấn canh tác',
           description: 'Cung cấp dịch vụ tư vấn về kỹ thuật canh tác, loại cây trồng phù hợp và phương pháp tăng năng suất.',
           link: '/services/farming-advisory'
         },
         {
-          icon: 'https://via.placeholder.com/32',
+          icon: require('@/assets/images/icons/drone.png'),
           title: 'Nông nghiệp 4.0',
           description: 'Tư vấn ứng dụng công nghệ cao trong nông nghiệp: IoT, tự động hóa và phân tích dữ liệu.',
           link: '/services/agriculture-consulting'

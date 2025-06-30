@@ -23,6 +23,9 @@ app.use(enableCORS);
 app.use(bodyParser.json({ limit: '5mb' }));
 app.use(bodyParser.urlencoded({ limit: '5mb', extended: true }));
 
+// Serve static files từ thư mục public
+app.use('/public', express.static(path.join(__dirname, '../public')));
+
 // Routes
 app.use('/api/users', userRoutes);
 

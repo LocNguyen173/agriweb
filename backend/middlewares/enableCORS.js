@@ -2,7 +2,8 @@ module.exports = function (req, res, next) {
   const allowedOrigins = [
     "https://www.agriweb.com",
     "https://agriweb.com",
-    "http://localhost:8080"
+    "http://localhost:8080",
+    "http://localhost:3001"
   ];
   const origin = req.headers.origin;
   if (allowedOrigins.includes(origin)) {
