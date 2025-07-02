@@ -2,7 +2,15 @@ const admin = require("firebase-admin");
 const path = require("path");
 const fs = require("fs");
 
-const serviceAccount = JSON.parse(fs.readFileSync(path.join(__dirname, "serviceAccountKey.json"), "utf8"));
+let serviceAccount;
+
+// Trong production, sử dụng environment variable
+if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+  serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+} else {
+  // Trong development, sử dụng file
+  serviceAccount = JSON.parse(fs.readFileSync(path.join(__dirname, "serviceAccountKey.json"), "utf8"));
+}
 
 if (!admin.apps.length) {
   admin.initializeApp({

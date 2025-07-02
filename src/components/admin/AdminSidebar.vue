@@ -1,7 +1,7 @@
 <template>
   <div class="admin-sidebar">
     <div class="sidebar-logo">
-      <img src="@/assets/images/logo.png" alt="Logo" />
+      <a href="/"><img src="@/assets/images/logo.png" alt="Logo" /></a>
       <h2>Admin Panel</h2>
     </div>
     
