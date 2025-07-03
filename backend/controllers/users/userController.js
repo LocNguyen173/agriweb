@@ -85,7 +85,7 @@ const login = async (userData, done) => {
   }
 };
 
-export {
+module.exports = {
   createUser,
   findUserByUsername,
   findUserById,
