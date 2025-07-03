@@ -2,7 +2,7 @@ module.exports = function (req, res, next) {
   const allowedOrigins = [
     "https://www.agriweb.com",
     "https://agriweb.com",
-    "https://your-frontend-domain.vercel.app", // Thay bằng domain Vercel thực tế
+    "https://agriweb-one.vercel.app", // Thay bằng domain Vercel thực tế
     "http://localhost:8080",
     "http://localhost:3001"
   ];
