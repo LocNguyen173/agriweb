@@ -1,7 +1,7 @@
 const express = require('express');
 const path = require("path");
-// Load biến môi trường từ file .env ở thư mục gốc
-require('dotenv').config({ path: path.join(__dirname, '../.env') });
+// Load biến môi trường - trong production dùng environment variables
+require('dotenv').config();
 const connectDB = require('./db');
 const userRoutes = require('./routes/userRoutes');
 const blogRoutes = require('./routes/blogRoutes');
