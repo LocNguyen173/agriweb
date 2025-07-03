@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Sử dụng URL động dựa trên environment
 const baseURL = process.env.NODE_ENV === 'production' 
-  ? 'https://your-backend-url.railway.app'  // Thay bằng URL Railway thực tế
+  ? 'http://agriweb-production.up.railway.app'  // Thay bằng URL Railway thực tế
   : 'http://localhost:3000';
 
 const axiosInstance = axios.create({
