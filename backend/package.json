@@ -1,6 +1,7 @@
 {
   "name": "agriweb-backend",
   "version": "1.0.0",
+  "type": "commonjs",
   "description": "Backend API for AgriWeb",
   "main": "app.js",
   "scripts": {

@@ -1,7 +1,6 @@
-import { User } from '../../config/model.js';
-import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
-dotenv.config();
+const { User } = require('../../config/model.js');
+const jwt = require("jsonwebtoken");
+require("dotenv").config();
 
 // Tạo user mới
 const createUser = async (userData, done) => {
